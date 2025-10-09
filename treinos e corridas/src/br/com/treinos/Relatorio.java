@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
  * Ela não guarda dados, apenas recebe os dados que precisa, processa e devolve
  * um texto (String) formatado como resultado.
  */
+
 public class Relatorio {
 
     // Um formatador pra deixar as datas no padrão brasileiro (dd/MM/yyyy).
@@ -105,6 +106,7 @@ public class Relatorio {
     /**
      * REQ19: Simula a exportação do relatório.
      */
+    
     public void exportar(String conteudo, String formato) {
         System.out.println("--- SIMULANDO EXPORTAÇÃO PARA " + formato.toUpperCase() + " ---");
         System.out.println(conteudo);
