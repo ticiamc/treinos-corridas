@@ -1,15 +1,16 @@
 package br.com.treinos;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
- * Representa um treino do tipo Intervalado.
- * Especialização da classe Treino 
+ * Representa um treino intervalado, aquele com picos de esforço e descanso.
+ * Também herda de Treino e adiciona suas próprias características.
  */
 public class Intervalado extends Treino {
 
-    private int series;
-    private int descansoEntreSeriesSeg;
+    private int series; // Quantas "explosões" de exercício a pessoa fez.
+    private int descansoEntreSeriesSeg; // Tempo de descanso entre as séries.
 
     public Intervalado(LocalDateTime dataExecucao, int duracaoSegundos, int series, int descansoEntreSeriesSeg) {
         super(dataExecucao, duracaoSegundos);
@@ -17,29 +18,25 @@ public class Intervalado extends Treino {
         this.descansoEntreSeriesSeg = descansoEntreSeriesSeg;
     }
 
+    /**
+     * A fórmula pra queima de calorias em treinos intervalados é diferente
+     * da corrida contínua, por isso o cálculo aqui é outro.
+     */
     @Override
     public double calcularCaloriasQueimadas(Usuario usuario) {
-        // Fórmula de exemplo para treino intervalado (HIIT)
-        // MET para HIIT ~12.0
-        double met = 12.0;
-        double duracaoMinutos = getDuracaoSegundos() / 60.0;
-        return (met * usuario.getPeso() * 3.5) / 200 * duracaoMinutos;
+        // Fórmula simplificada para HIIT (High-Intensity Interval Training)
+        // MET para HIIT é mais alto, ~8.0
+        double met = 8.0;
+        double tempoEmHoras = this.duracaoSegundos / 3600.0;
+        return met * usuario.getPeso() * tempoEmHoras;
     }
-
-    // Getters e Setters
-    public int getSeries() {
-        return series;
-    }
-
-    public void setSeries(int series) {
-        this.series = series;
-    }
-
-    public int getDescansoEntreSeriesSeg() {
-        return descansoEntreSeriesSeg;
-    }
-
-    public void setDescansoEntreSeriesSeg(int descansoEntreSeriesSeg) {
-        this.descansoEntreSeriesSeg = descansoEntreSeriesSeg;
+    
+    @Override
+    public String toString() {
+        return String.format("Treino Intervalado em %s | Duração: %d min | Séries: %d",
+            this.dataExecucao.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+            this.duracaoSegundos / 60,
+            this.series
+        );
     }
 }
