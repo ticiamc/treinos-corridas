@@ -2,11 +2,7 @@ package br.com.treinos;
 
 import java.time.LocalDateTime;
 
-/**
- * Representa uma notificação para o usuário 
- */
 public class Notificacao {
-
     private String mensagem;
     private LocalDateTime dataEnvio;
     private boolean lida;
@@ -23,10 +19,13 @@ public class Notificacao {
         this.lida = true;
     }
 
-    // Getters e Setters
-    public String getMensagem() { return mensagem; }
-    public void setMensagem(String mensagem) { this.mensagem = mensagem; }
-    public LocalDateTime getDataEnvio() { return dataEnvio; }
-    public boolean isLida() { return lida; }
-    public Usuario getDestinatario() { return destinatario; }
+    // --- Getters e Setters ---
+
+    public String getMensagem() {
+        return mensagem;
+    }
+
+    public boolean isLida() {
+        return lida;
+    }
 }
