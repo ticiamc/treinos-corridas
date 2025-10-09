@@ -78,6 +78,6 @@ O sistema deve registrar dados de corridas e treinos (distância, tempo, caloria
 - **Apache POI** – Exportação de relatórios em CSV ou Excel.
 - **JUnit / Mockito** – Testes de regras de negócio (cálculo de métricas, validação de treinos e metas).
 
-<img width="2367" height="972" alt="image" src="https://github.com/user-attachments/assets/203cf2bd-5a1d-4c69-8539-09efbd820281" />
+
 
 
