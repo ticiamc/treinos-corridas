@@ -6,7 +6,7 @@
 * João Miguel Oliveira de Carvalho - joaomigueloliveira@ufrpe.br
 
 ## link do UML: 
-https://www.mermaidchart.com/d/40ad1712-bbcc-4bbb-b2b2-1d9c9ed30582
+https://www.mermaidchart.com/app/projects/7cb9b51d-377c-43f0-8dd2-ee01d36ead11/diagrams/40ad1712-bbcc-4bbb-b2b2-1d9c9ed30582/share/invite/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N1bWVudElEIjoiNDBhZDE3MTItYmJjYy00YmJiLWIyYjItMWQ5YzllZDMwNTgyIiwiYWNjZXNzIjoiRWRpdCIsImlhdCI6MTc2MDAyODA4NX0.0Q3UMUETGjRwLJr2nv_VXPhcVRNF7xiLysEvlBJVfoM
 # Sistema de Gestão de Treinos e Corridas
 
 ## Descrição
