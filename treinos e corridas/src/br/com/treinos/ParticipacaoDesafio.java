@@ -1,29 +1,37 @@
 package br.com.treinos;
 
 /**
- * Classe de associação que representa a participação de um Usuário em um Desafio 
+ * Essa classe é como uma "ficha de inscrição" num desafio.
+ * Ela existe pra conectar duas informações: QUEM (o usuário) e ONDE (o desafio).
+ * Além disso, ela guarda o progresso daquela pessoa naquele desafio específico.
  */
 public class ParticipacaoDesafio {
-
-    private double progresso;
+    
     private Usuario usuario;
     private Desafio desafio;
+    private double progresso; // Ex: quantos km o usuário já correu para este desafio.
 
     public ParticipacaoDesafio(Usuario usuario, Desafio desafio) {
         this.usuario = usuario;
         this.desafio = desafio;
-        this.progresso = 0.0;
+        this.progresso = 0; // Todo mundo começa com zero de progresso.
     }
 
-    public void atualizarProgresso(double valor) {
-        this.progresso += valor;
+    // --- Getters e Setters ---
+
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    // Getters e Setters
-    public double getProgresso() { return progresso; }
-    public void setProgresso(double progresso) { this.progresso = progresso; }
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
-    public Desafio getDesafio() { return desafio; }
-    public void setDesafio(Desafio desafio) { this.desafio = desafio; }
+    public Desafio getDesafio() {
+        return desafio;
+    }
+
+    public double getProgresso() {
+        return progresso;
+    }
+
+    public void setProgresso(double progresso) {
+        this.progresso = progresso;
+    }
 }
