@@ -13,8 +13,8 @@ public class Principal {
         // Bloco de código para simular a utilização do sistema.
 
         // 1. Criando usuários
-        Usuario usuario1 = new Usuario("Sarah Lima", 30, 75.5, 1.80, "sarah@abc.com");
-        Usuario usuario2 = new Usuario("Leticia Marques", 25, 68.0, 1.70, "leticia@abc.com");
+        Usuario usuario1 = new Usuario("Rodrigo Marques", 30, 75.5, 1.80, "rodrigomq@abc.com");
+        Usuario usuario2 = new Usuario("Victoria Andrade", 25, 68.0, 1.70, "victorinhaA@abc.com");
 
         // 2. Registrando alguns treinos para a Sarah
         Corrida c1 = new Corrida(LocalDateTime.now().minusDays(10), 3600, 10000); // 10km
