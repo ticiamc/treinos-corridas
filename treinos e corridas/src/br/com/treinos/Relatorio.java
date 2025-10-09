@@ -1,4 +1,4 @@
-// package br.com.treinos;
+package br.com.treinos;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -6,12 +6,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Essa classe é a "inteligência" do sistema para gerar textos com resumos e análises.
+ * Ela não guarda dados, apenas recebe os dados que precisa, processa e devolve
+ * um texto (String) formatado como resultado.
+ */
 public class Relatorio {
 
+    // Um formatador pra deixar as datas no padrão brasileiro (dd/MM/yyyy).
     private final DateTimeFormatter FORMATADOR_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /**
-     * REQ16: Gera um relatório de atividades para um usuário em um período específico.
+     * REQ16: Pega todos os treinos de um usuário dentro de um período e monta um resumo.
      */
     public String gerarRelatorioAtividades(Usuario usuario, LocalDate inicio, LocalDate fim) {
         StringBuilder conteudo = new StringBuilder();
@@ -29,7 +35,7 @@ public class Relatorio {
             conteudo.append("Nenhuma atividade registrada no período.\n");
         } else {
             for (Treino treino : treinosNoPeriodo) {
-                conteudo.append(treino.toString()).append("\n"); // Supondo que a classe Treino tem um bom toString()
+                conteudo.append(treino.toString()).append("\n");
             }
         }
         
@@ -68,7 +74,7 @@ public class Relatorio {
     }
     
     /**
-     * REQ18: Gera o ranking de participantes de um desafio.
+     * REQ18: Monta o ranking de um desafio, ordenando os participantes pelo progresso.
      */
     public String gerarRankingDesafio(Desafio desafio) {
         StringBuilder conteudo = new StringBuilder();
@@ -79,7 +85,6 @@ public class Relatorio {
         if (desafio.getParticipacoes().isEmpty()) {
             conteudo.append("Nenhum participante no desafio.\n");
         } else {
-            // Ordena os participantes pelo progresso (do maior para o menor)
             List<ParticipacaoDesafio> ranking = desafio.getParticipacoes().stream()
                 .sorted(Comparator.comparingDouble(ParticipacaoDesafio::getProgresso).reversed())
                 .collect(Collectors.toList());
@@ -98,12 +103,11 @@ public class Relatorio {
     }
 
     /**
-     * REQ19: Exporta o conteúdo gerado para um formato específico (simulação).
+     * REQ19: Simula a exportação do relatório.
      */
     public void exportar(String conteudo, String formato) {
-        System.out.println("--- INÍCIO DA EXPORTAÇÃO PARA " + formato.toUpperCase() + " ---");
+        System.out.println("--- SIMULANDO EXPORTAÇÃO PARA " + formato.toUpperCase() + " ---");
         System.out.println(conteudo);
         System.out.println("--- FIM DA EXPORTAÇÃO ---");
-        System.out.println("Arquivo " + formato.toLowerCase() + " gerado com sucesso (simulação).");
     }
 }
