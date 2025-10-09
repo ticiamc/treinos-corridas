@@ -6,7 +6,7 @@
 * João Miguel Oliveira de Carvalho - joaomigueloliveira@ufrpe.br
 
 ## link do UML para edição: 
-https://www.mermaidchart.com/app/projects/78973b59-9842-44bc-82c2-aaf3eeb54dce/diagrams/627160cb-7caf-47cf-b3a8-0d3613aa87dd/version/v0.1/edit
+https://www.mermaidchart.com/d/40ad1712-bbcc-4bbb-b2b2-1d9c9ed30582
 
 # Sistema de Gestão de Treinos e Corridas
 
@@ -76,4 +76,8 @@ O sistema deve registrar dados de corridas e treinos (distância, tempo, caloria
 - **JFreeChart / JavaFX Charts** – Geração de gráficos de desempenho e progresso.
 - **iText / JasperReports** – Geração de relatórios em PDF.
 - **Apache POI** – Exportação de relatórios em CSV ou Excel.
-- **JUnit / Mockito** – Testes de regras de negócio (cálculo de métricas, validação de treinos e metas).  
+- **JUnit / Mockito** – Testes de regras de negócio (cálculo de métricas, validação de treinos e metas).
+
+<img width="2367" height="972" alt="image" src="https://github.com/user-attachments/assets/203cf2bd-5a1d-4c69-8539-09efbd820281" />
+
+
