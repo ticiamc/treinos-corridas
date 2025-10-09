@@ -9,9 +9,9 @@ public class Usuario {
     private double peso;
     private double altura;
     private String email;
-    private List<Treino> treinosRegistrados;
-    private List<Meta> metas;
-    private List<ParticipacaoDesafio> participacoesEmDesafios;
+    
+    // ADICIONADO: Lista para armazenar os treinos do usuário
+    private List<Treino> treinos;
 
     public Usuario(String nome, int idade, double peso, double altura, String email) {
         this.nome = nome;
@@ -19,26 +19,23 @@ public class Usuario {
         this.peso = peso;
         this.altura = altura;
         this.email = email;
-        this.treinosRegistrados = new ArrayList<>();
-        this.metas = new ArrayList<>();
-        this.participacoesEmDesafios = new ArrayList<>();
+        // ADICIONADO: Inicializa a lista no construtor
+        this.treinos = new ArrayList<>(); 
     }
 
-    public void adicionarTreino(Treino treino) { this.treinosRegistrados.add(treino); }
-    public void adicionarMeta(Meta meta) { this.metas.add(meta); }
-
-    // Getters e Setters
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-    public int getIdade() { return idade; }
-    public void setIdade(int idade) { this.idade = idade; }
-    public double getPeso() { return peso; }
-    public void setPeso(double peso) { this.peso = peso; }
-    public double getAltura() { return altura; }
-    public void setAltura(double altura) { this.altura = altura; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public List<Treino> getTreinosRegistrados() { return treinosRegistrados; }
-    public List<Meta> getMetas() { return metas; }
-    public List<ParticipacaoDesafio> getParticipacoesEmDesafios() { return participacoesEmDesafios; }
+    // ADICIONADO: Método para registrar um treino na lista do usuário
+    public void adicionarTreino(Treino treino) {
+        this.treinos.add(treino);
+    }
+    
+    // --- Getters e Setters existentes ---
+    public String getNome() {
+        return nome;
+    }
+    
+    public List<Treino> getTreinos() {
+        return treinos;
+    }
+    
+    // ... outros getters e setters
 }
