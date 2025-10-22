@@ -1,13 +1,10 @@
 package br.com.negocio;
 
-import java.util.Scanner;
-
 import br.com.dados.RepositorioClientes;
 import br.com.negocio.treinos.Usuario;
 
 public abstract class ControladorCliente {
     public static void cadastrarUsuario(Usuario cliente, RepositorioClientes repositorio){
-        Scanner scan = new Scanner(System.in);
         repositorio.adicionarElemento(cliente);
     }
 

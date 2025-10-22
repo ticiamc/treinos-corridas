@@ -1,8 +1,6 @@
 
 
 import java.util.Scanner;
-import java.util.ResourceBundle.Control;
-
 import br.com.dados.RepositorioClientes;
 import br.com.negocio.ControladorCliente;
 import br.com.negocio.treinos.Usuario;
