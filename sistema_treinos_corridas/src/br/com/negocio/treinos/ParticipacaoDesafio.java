@@ -1,4 +1,4 @@
-package br.com.treinos;
+package br.com.negocio.treinos;
 
 /**
  * Essa classe é como uma "ficha de inscrição" num desafio.

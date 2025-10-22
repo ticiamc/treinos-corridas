@@ -1,4 +1,4 @@
-package br.com.treinos;
+package br.com.negocio.treinos;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
