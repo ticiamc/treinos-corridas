@@ -93,7 +93,7 @@ public class ControladorTreino {
     //Remove um treino da lista de um usuário.
      
     public void removerTreino(String cpfUsuario, int idTreino) {
-        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario); // CORREÇÃO: buscar por CPF
+        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario); 
         if (usuario != null) {
             Treino treinoParaRemover = buscarTreino(usuario, idTreino);
             if (treinoParaRemover != null) {
@@ -111,7 +111,7 @@ public class ControladorTreino {
     //Lista todos os treinos de um usuário.
     
     public void listarTreinos(String cpfUsuario) {
-        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario); // CORREÇÃO: buscar por CPF
+        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario); 
         if (usuario != null) {
             System.out.println("--- Treinos de " + usuario.getNome() + " (CPF: " + usuario.getCpf() + ") ---");
             List<Treino> treinos = usuario.getTreinos();
