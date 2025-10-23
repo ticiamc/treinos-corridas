@@ -66,7 +66,6 @@ public class Principal {
             System.out.println("--- Treinos (Cliente) ---");
             System.out.println("6. Cadastrar Treino (Corrida/Intervalado)");
             System.out.println("7. Listar Treinos do Cliente");
-            System.out.println("   (Para remover, use a opção 7, anote o ID do treino e use a Opção X - AINDA NÃO IMPLEMENTADA)");
             System.out.println("--- Metas (Cliente) ---");
             System.out.println("8. Cadastrar Meta");
             System.out.println("9. Listar Metas do Cliente");
