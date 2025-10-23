@@ -8,8 +8,8 @@ public class Intervalado extends Treino {
     private int series;
     private int descansoEntreSeriesSeg; 
 
-    public Intervalado(LocalDateTime dataExecucao, int duracaoSegundos, int series, int descansoEntreSeriesSeg) {
-        super(dataExecucao, duracaoSegundos);
+    public Intervalado(String nomeTreino, LocalDateTime dataExecucao, int duracaoSegundos, int series, int descansoEntreSeriesSeg) {
+        super(nomeTreino, dataExecucao, duracaoSegundos);
         this.series = series;
         this.descansoEntreSeriesSeg = descansoEntreSeriesSeg;
     }
@@ -42,4 +42,14 @@ public class Intervalado extends Treino {
     public int getDescansoEntreSeriesSeg() {
         return descansoEntreSeriesSeg;
     }
+
+    public void setSeries(int series) {
+        this.series = series;
+    }
+
+    public void setDescansoEntreSeriesSeg(int descansoEntreSeriesSeg) {
+        this.descansoEntreSeriesSeg = descansoEntreSeriesSeg;
+    }
+
+    
 }

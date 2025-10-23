@@ -13,15 +13,19 @@ public abstract class Treino {
 
     // 'protected' significa que só essa classe e suas "filhas" (Corrida, Intervalado)
     // podem acessar diretamente essa informação.
+    protected String nomeTreino;
     protected LocalDateTime dataExecucao;
-    protected int duracaoSegundos; 
+    protected int duracaoSegundos;
+    protected boolean status; 
 
-    public Treino(LocalDateTime dataExecucao, int duracaoSegundos) {
+    public Treino(String nomeTreino, LocalDateTime dataExecucao, int duracaoSegundos) {
         if (duracaoSegundos <= 0) {
             throw new IllegalArgumentException("A duração do treino tem que ser maior que zero.");
         }
+        this.nomeTreino = nomeTreino;
         this.dataExecucao = dataExecucao;
         this.duracaoSegundos = duracaoSegundos;
+        this.status = false;
     }
 
     /**
@@ -44,4 +48,30 @@ public abstract class Treino {
     public int getDuracaoSegundos() {
         return duracaoSegundos;
     }
+    
+    public void setDataExecucao(LocalDateTime dataExecucao) {
+        this.dataExecucao = dataExecucao;
+    }
+
+    public void setDuracaoSegundos(int duracaoSegundos) {
+        this.duracaoSegundos = duracaoSegundos;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public String getNomeTreino() {
+        return nomeTreino;
+    }
+
+    public void setNomeTreino(String nomeTreino) {
+        this.nomeTreino = nomeTreino;
+    }
+
+    
 }

@@ -12,9 +12,9 @@ public class Corrida extends Treino {
 
     private double distanciaEmMetros;
 
-    public Corrida(LocalDateTime dataExecucao, int duracaoSegundos, double distanciaEmMetros) {
+    public Corrida(String nomeTreino, LocalDateTime dataExecucao, int duracaoSegundos, double distanciaEmMetros) {
         // 'super' chama o construtor da classe "mãe" (Treino) pra guardar a data e duração.
-        super(dataExecucao, duracaoSegundos);
+        super(nomeTreino, dataExecucao, duracaoSegundos);
         if (distanciaEmMetros <= 0) {
             throw new IllegalArgumentException("A distância da corrida tem que ser maior que zero.");
         }
@@ -60,4 +60,10 @@ public class Corrida extends Treino {
     public double getDistanciaEmMetros() {
         return distanciaEmMetros;
     }
+
+    public void setDistanciaEmMetros(double distanciaEmMetros) {
+        this.distanciaEmMetros = distanciaEmMetros;
+    }
+
+    
 }

@@ -4,8 +4,10 @@ import br.com.dados.RepositorioClientes;
 import br.com.negocio.treinos.Usuario;
 
 public abstract class ControladorCliente {
-    public static void cadastrarUsuario(Usuario cliente, RepositorioClientes repositorio){
-        repositorio.adicionarElemento(cliente);
+    // Métodos para clientes
+    public static void cadastrarUsuario(String nome, int idade, float peso, float altura, String email, RepositorioClientes repositorio){
+        Usuario user = new Usuario(nome, idade, peso, altura, email);
+        repositorio.adicionarElemento(user);
     }
 
     public static void atualizarUsuario(String nome, RepositorioClientes repositorioClientes, String new_name, int new_idade, float new_peso, float new_altura, String new_email){
@@ -21,5 +23,15 @@ public abstract class ControladorCliente {
             System.out.println("\nUsuário não encontrado!\n");
         }
 
+    }
+
+    public static void deletarCliente(String nome, RepositorioClientes repositorio){
+        Usuario cliente = repositorio.buscarElemento(nome);
+        if (cliente != null){
+            repositorio.removerElemento(nome);
+        }
+        else{
+            System.out.println("\nUsuário não encontrado!\n");
+        }
     }
 }

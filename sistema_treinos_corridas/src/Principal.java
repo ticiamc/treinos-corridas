@@ -1,8 +1,14 @@
 
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import br.com.dados.RepositorioClientes;
 import br.com.negocio.ControladorCliente;
+import br.com.negocio.ControladorTreino;
+import br.com.negocio.treinos.Corrida;
+import br.com.negocio.treinos.Intervalado;
+import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.Usuario;
 
 // Essa classe não faz parte do sistema em si, mas serve pra gente testar se as outras classes estão funcionando como deveriam.
@@ -18,8 +24,8 @@ public class Principal {
             System.out.println("    Sistema de Treinos    ");
             System.out.println("==========================");
             System.out.print("\nMENU: \n[ 1] Cadastrar cliente \n[ 2] Ver clientes cadastrados \n[ 3] Atualizar Cliente \n[ 4] Deletar Cliente" + 
-                             "\n[ 5] Cadastrar plano de treino \n[ 6] Ver planos de treino \n[ 7] Atualizar plano de treino \n[ 8] Deletar plano de treino" + 
-                             "\n[ 9] Cadastrar treino \n[10] Ver treinos \n[11] Atualizar treino \n[12] Deletar treino" + 
+                             "\n[ 5] Cadastrar treino \n[ 6] Ver treinos \n[ 7] Atualizar treino \n[ 8] Deletar treino" + 
+                             "\n[ 9] Cadastrar plano de treino \n[10] Ver planos de treino \n[11] Atualizar plano de treino \n[12] Deletar plano de treino" + 
                              "\n[13] Cadastrar Desafio \n[14] Ver desafios \n[15] Deletar desafio" + 
                              "\n[16] Cadastrar Meta \n[17] Ver metas \n[18] Atualizar metas \n[19] Deletar metas" + 
                              "\n[20] Gerar relatório \n[21] Notificações \n[22] Sair do Sistema \nSua escolha: ");
@@ -42,11 +48,8 @@ public class Principal {
                     
                     System.out.print("Altura do cliente: ");
                     float altura = scan.nextFloat();
-                    
 
-                    Usuario user = new Usuario(nome, idade, peso, altura, email);
-
-                    ControladorCliente.cadastrarUsuario(user, repositorio);
+                    ControladorCliente.cadastrarUsuario(nome, idade, peso, altura, email, repositorio);
 
                     break;
                 case 2:
@@ -89,19 +92,104 @@ public class Principal {
                     }
                     break;
                 case 4:
-                    // Cadastrar plano de Treino
+                    System.out.print("Nome do cliente: ");
+                    String username = scan.nextLine();
+
+                    if (repositorio.getClientes().size() > 0){
+                        ControladorCliente.deletarCliente(username, repositorio);
+                    }
+                    else{
+                        System.out.println("\nBanco Vazio! Nenhum usuário cadastrado!\n");
+                    }
                     break;
                 case 5:
-                    // Cadastrar Treino
+                    System.out.print("Nome do cliente: ");
+                    String username2 = scan.nextLine();
+
+                    System.out.print("Digite o nome do Treino: ");
+                    String nomeTreino = scan.nextLine();
+
+                    System.out.print("Digite a data e hora (formato: dd/MM/yyyy HH:mm): ");
+                    String date = scan.nextLine();
+                    DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                    LocalDateTime dataHora = LocalDateTime.parse(date, formato);
+
+                    System.out.print("Digite a duração do treino em segundos: ");
+                    int count = scan.nextInt();
+
+                    System.out.print("Escolha o tipo de treino (1 - Intervalado 2 - Corrida): ");
+                    int choice = scan.nextInt();
+
+                    if (repositorio.getClientes().size() > 0){
+                        if (choice == 1){
+                            System.out.print("Digite a quantidade de series: ");
+                            int series = scan.nextInt();
+    
+                            System.out.print("Digite o tempo de descanso: ");
+                            int descanso = scan.nextInt();
+    
+                            Intervalado intervalado = new Intervalado(nomeTreino, dataHora, count, series, descanso);
+                            ControladorTreino.adicionarTreino(username2, intervalado, repositorio);
+                        }
+                        else if (choice == 2){
+                            System.out.print("Digite a distância a ser percorrida (m): ");
+                            int distancia = scan.nextInt();
+    
+                            Corrida corrida = new Corrida(nomeTreino, dataHora, count, distancia);
+                            ControladorTreino.adicionarTreino(username2, corrida, repositorio);
+                        }
+                        else{
+                            System.out.println("\nErro!!! Digite 1 ou 2!");
+                        }
+                    }
+                    else{
+                        System.out.println("\nBanco Vazio! Nenhum usuário cadastrado!\n");
+                    }
+
+
                     break;
                 case 6:
-                    // Cadastrar Desafio
+                    System.out.print("Nome do cliente: ");
+                    String username3 = scan.nextLine();
+
+                    Usuario user = repositorio.buscarElemento(username3);
+                    if (user.equals(null)){
+                        System.out.print("\nCliente não encontrado!\n");
+                    }
+                    else{
+                        for (Treino t: user.getTreinos()){
+                            System.out.println(t.getNomeTreino());
+                        }
+                    }
                     break;
                 case 7:
-                    // Cadastrar Meta
+                    System.out.print("Nome do cliente: ");
+                    String username4 = scan.nextLine();
+
+                    System.out.print("Digite o nome antigo do Treino: ");
+                    String old_nomeTreino = scan.nextLine();
+
+
+                    System.out.print("Digite o nome do Treino: ");
+                    String new_nomeTreino = scan.nextLine();
+
+                    System.out.print("Digite a data e hora (formato: dd/MM/yyyy HH:mm): ");
+                    String new_date = scan.nextLine();
+
+                    System.out.print("Digite a duração do treino em segundos: ");
+                    int new_count = scan.nextInt();
+
+                    ControladorTreino.atualizarTreino(username4, old_nomeTreino, new_nomeTreino, new_date, new_count, repositorio);
                     break;
                 case 8:
-                    // Gerar Relatório
+                    // Remover Treino
+                    System.out.print("Nome do cliente: ");
+                    String username5 = scan.nextLine();
+
+                    System.out.print("Digite o nome do Treino: ");
+                    String nomeTreino2 = scan.nextLine();
+
+                    ControladorTreino.deletarTreino(username5, nomeTreino2, repositorio);
                     break;
                 case 9:
                     // Sair do Sistema
