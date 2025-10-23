@@ -1,44 +1,29 @@
 package br.com.negocio.treinos;
 
-import java.time.LocalDate;
-
+/**
+ * Representa uma Meta (objetivo) que um Usuário deseja alcançar.
+ * A meta pode ser de diferentes tipos (DISTANCIA, TEMPO, etc.),
+ * definidos pelo enum TipoMeta.
+ */
 public class Meta {
-    
-    private static int proximoId = 1; // Contador estático para IDs
-    private int idMeta;
-    private String descricao;
-    private double valorAlvo;
-    private TipoMeta tipoMeta;
-    private LocalDate dataInicio;
-    private LocalDate dataFim;
-    private double progressoAtual;
 
-    public Meta(String descricao, double valorAlvo, TipoMeta tipoMeta, LocalDate dataInicio, LocalDate dataFim) {
-        if (dataInicio.isAfter(dataFim)) {
-            throw new IllegalArgumentException("A data de início não pode ser posterior à data de término.");
-        }
-        this.idMeta = proximoId++; // Atribui ID único
+    // --- Atributos ---
+    private String descricao; //(ex: "Correr 10km")
+    private TipoMeta tipoMeta; //(DISTANCIA, TEMPO)
+    private double distancia; //(em metros)
+    private double tempo; //(em minutos)
+    private boolean concluida; // Status que indica se a meta já foi batida
+
+    // --- Construtor ---
+   
+    public Meta(String descricao, TipoMeta tipoMeta) {
         this.descricao = descricao;
-        this.valorAlvo = valorAlvo;
         this.tipoMeta = tipoMeta;
-        this.dataInicio = dataInicio;
-        this.dataFim = dataFim;
-        this.progressoAtual = 0;
-    }
-
-    public void atualizarProgresso(double valor) {
-        this.progressoAtual += valor;
-        if (this.progressoAtual >= valorAlvo) {
-            System.out.println("Parabéns! Meta '" + descricao + "' atingida!");
-        }
+        this.concluida = false; // Toda meta começa como "não concluída"
     }
 
     // --- Getters e Setters ---
     
-    public int getIdMeta() {
-        return idMeta;
-    }
-
     public String getDescricao() {
         return descricao;
     }
@@ -47,14 +32,6 @@ public class Meta {
         this.descricao = descricao;
     }
 
-    public double getValorAlvo() {
-        return valorAlvo;
-    }
-
-    public void setValorAlvo(double valorAlvo) {
-        this.valorAlvo = valorAlvo;
-    }
-    
     public TipoMeta getTipoMeta() {
         return tipoMeta;
     }
@@ -63,32 +40,31 @@ public class Meta {
         this.tipoMeta = tipoMeta;
     }
 
-    public LocalDate getDataInicio() {
-        return dataInicio;
+    public double getDistancia() {
+        return distancia;
     }
 
-    // Data de início não deve ser alterada após criação, geralmente.
-    // public void setDataInicio(LocalDate dataInicio) {
-    //     this.dataInicio = dataInicio;
-    // }
-   
-    public LocalDate getDataFim() {
-        return dataFim;
+    // Define o valor-alvo para metas de DISTANCIA (em metros).
+     
+    public void setDistancia(double distancia) {
+        this.distancia = distancia;
     }
 
-    public void setDataFim(LocalDate dataFim) {
-        if (this.dataInicio.isAfter(dataFim)) {
-            throw new IllegalArgumentException("A data de início não pode ser posterior à data de término.");
-        }
-        this.dataFim = dataFim;
+    public double getTempo() {
+        return tempo;
     }
+
+    // Define o valor-alvo para metas de TEMPO (em minutos).
     
-    public double getProgressoAtual() {
-        return progressoAtual;
+    public void setTempo(double tempo) {
+        this.tempo = tempo;
     }
 
-    // O progresso é atualizado apenas por atualizarProgresso
-    // public void setProgressoAtual(double progressoAtual) {
-    //     this.progressoAtual = progressoAtual;
-    // }
+    public boolean isConcluida() {
+        return concluida;
+    }
+
+    public void setConcluida(boolean concluida) {
+        this.concluida = concluida;
+    }
 }

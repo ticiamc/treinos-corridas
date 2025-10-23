@@ -1,22 +1,24 @@
 package br.com.negocio.treinos;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
+/**
+ * Representa uma mensagem de notificação para o usuário.
+ * Usada para informar sobre metas atingidas, desafios, etc.
+ */
 public class Notificacao {
+
+    // --- Atributos ---
     private String mensagem;
-    private LocalDateTime dataEnvio;
-    private boolean lida;
-    private Usuario destinatario;
+    private Date data; 
+    private boolean lida; 
 
-    public Notificacao(String mensagem, Usuario destinatario) {
+    // --- Construtor ---
+    
+    public Notificacao(String mensagem, Date data) {
         this.mensagem = mensagem;
-        this.destinatario = destinatario;
-        this.dataEnvio = LocalDateTime.now();
-        this.lida = false;
-    }
-
-    public void marcarComoLida() {
-        this.lida = true;
+        this.data = data;
+        this.lida = false; // Toda notificação começa como "não lida"
     }
 
     // --- Getters e Setters ---
@@ -25,17 +27,23 @@ public class Notificacao {
         return mensagem;
     }
 
+    public void setMensagem(String mensagem) {
+        this.mensagem = mensagem;
+    }
+
+    public Date getData() {
+        return data;
+    }
+
+    public void setData(Date data) {
+        this.data = data;
+    }
+
     public boolean isLida() {
         return lida;
     }
 
-    
-    public LocalDateTime getDataEnvio() {
-        return dataEnvio;
-    }
-
-   
-    public Usuario getDestinatario() {
-        return destinatario;
+    public void setLida(boolean lida) {
+        this.lida = lida;
     }
 }

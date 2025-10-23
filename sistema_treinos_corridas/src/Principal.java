@@ -1,10 +1,4 @@
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Scanner;
-
+// Imports das camadas de Dados, Negócio e Modelo
 import br.com.dados.IRepositorioCliente;
 import br.com.dados.IRepositorioDesafio;
 import br.com.dados.RepositorioClientes;
@@ -14,469 +8,294 @@ import br.com.negocio.ControladorDesafio;
 import br.com.negocio.ControladorMeta;
 import br.com.negocio.ControladorPlanoTreino;
 import br.com.negocio.ControladorTreino;
-import br.com.negocio.treinos.Desafio;
-import br.com.negocio.treinos.Meta;
-import br.com.negocio.treinos.PlanoTreino;
-import br.com.negocio.treinos.Relatorio;
-import br.com.negocio.treinos.TipoMeta;
-import br.com.negocio.treinos.Treino;
-import br.com.negocio.treinos.Usuario;
+import br.com.negocio.treinos.*; // Importa todas as classes do pacote 'treinos'
 
+import java.util.Date; // Para usar a data atual
+import java.util.Scanner; // Para ler a entrada do usuário
+
+/**
+ * Classe Principal (Camada de Interface/Apresentação - modo Console).
+ * Contém o método main() que inicia o sistema, exibe o menu
+ * e gerencia a interação com o usuário.
+ */
 public class Principal {
-
-    // Formatos de data e hora padrão
-    private static DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-    // Controladores
-    private static ControladorCliente controladorCliente;
-    private static ControladorTreino controladorTreino;
-    private static ControladorMeta controladorMeta;
-    private static ControladorPlanoTreino controladorPlanoTreino;
-    private static ControladorDesafio controladorDesafio;
-
-    // Relatórios
-    private static Relatorio relatorio = new Relatorio();
-
-    // Scanner global
-    private static Scanner scanner = new Scanner(System.in);
-
+    
+    /**
+     * Ponto de entrada do programa.
+     */
     public static void main(String[] args) {
-        // Inicialização das camadas
+        // --- 1. Inicialização ---
+        Scanner scanner = new Scanner(System.in);
+        
+        // Inicializa os Repositórios (Camada de Dados)
         IRepositorioCliente repositorioCliente = new RepositorioClientes();
         IRepositorioDesafio repositorioDesafio = new RepositorioDesafio();
 
-        controladorCliente = new ControladorCliente(repositorioCliente);
-        controladorTreino = new ControladorTreino(repositorioCliente);
-        controladorMeta = new ControladorMeta(repositorioCliente);
-        controladorPlanoTreino = new ControladorPlanoTreino(repositorioCliente);
-        controladorDesafio = new ControladorDesafio(repositorioDesafio, repositorioCliente);
+        // Inicializa os Controladores (Camada de Negócio), injetando os repositórios
+        ControladorCliente controladorCliente = new ControladorCliente(repositorioCliente);
+        ControladorTreino controladorTreino = new ControladorTreino();
+        ControladorMeta controladorMeta = new ControladorMeta();
+        ControladorPlanoTreino controladorPlanoTreino = new ControladorPlanoTreino();
+        ControladorDesafio controladorDesafio = new ControladorDesafio(repositorioDesafio, repositorioCliente);
 
-        int opcao = -1;
+        int opcao; // Variável para guardar a escolha do menu
 
-        while (opcao != 0) {
-            exibirMenu();
-            try {
-                opcao = Integer.parseInt(scanner.nextLine());
+        // --- 2. Loop Principal do Menu ---
+        do {
+            System.out.println("\n--- Menu Principal ---");
+            System.out.println("1. Cadastrar Cliente");
+            System.out.println("2. Buscar Cliente");
+            System.out.println("3. Atualizar Cliente");
+            System.out.println("4. Remover Cliente");
+            System.out.println("--- Treinos e Metas ---");
+            System.out.println("5. Cadastrar Treino (Executado)");
+            System.out.println("6. Cadastrar Meta");
+            System.out.println("7. Cadastrar Plano de Treino");
+            System.out.println("8. Cadastrar Desafio");
+            System.out.println("9. Ranking do Desafio");
+            System.out.println("--- Relatórios e Notificações ---");
+            System.out.println("10. Gerar Relatório de Atividades");
+            System.out.println("11. Gerar Relatório de Evolução");
+            System.out.println("12. Exportar Relatório de Atividades");
+            System.out.println("13. Ver Minhas Notificações");
+            System.out.println("0. Sair");
+            System.out.print("Escolha uma opção: ");
+            
+            opcao = scanner.nextInt();
+            scanner.nextLine(); // Limpar o buffer do scanner (consome o "Enter")
 
-                switch (opcao) {
-                    case 1:
-                        cadastrarCliente();
-                        break;
-                    case 2:
-                        buscarCliente();
-                        break;
-                    case 3:
-                        atualizarCliente();
-                        break;
-                    case 4:
-                        removerCliente();
-                        break;
-                    case 5:
-                        cadastrarTreino();
-                        break;
-                    case 6:
-                        listarTreinos();
-                        break;
-                    case 7:
-                        atualizarTreino();
-                        break;
-                    case 8:
-                        removerTreino();
-                        break;
-                    case 9:
-                        cadastrarMeta();
-                        break;
-                    case 10:
-                        listarMetas();
-                        break;
-                    case 11:
-                        atualizarMeta();
-                        break;
-                    case 12:
-                        removerMeta();
-                        break;
-                    case 13:
-                        cadastrarPlanoTreino();
-                        break;
-                    case 14:
-                        listarPlanosTreino();
-                        break;
-                    case 15:
-                        removerPlanoTreino();
-                        break;
-                    case 16:
-                        adicionarTreinoPlano();
-                        break;
-                    case 17:
-                        removerTreinoPlano();
-                        break;
-                    case 18:
-                        cadastrarDesafio();
-                        break;
-                    case 19:
-                        listarDesafios();
-                        break;
-                    case 20:
-                        participarDesafio();
-                        break;
-                    case 21:
-                        registrarProgressoDesafio();
-                        break;
-                    case 22:
-                        verRankingDesafio();
-                        break;
-                    case 0:
-                        System.out.println("Saindo do sistema...");
-                        break;
-                    default:
-                        System.out.println("Opção inválida. Tente novamente.");
+            // --- 3. Processamento da Opção ---
+            switch (opcao) {
+                case 1: { // Cadastrar Cliente
+                    System.out.println("--- Cadastro de Cliente ---");
+                    System.out.print("Nome: ");
+                    String nome = scanner.nextLine();
+                    System.out.print("Idade: ");
+                    int idade = scanner.nextInt();
+                    System.out.print("Peso (kg): ");
+                    double peso = scanner.nextDouble();
+                    System.out.print("Altura (m): ");
+                    double altura = scanner.nextDouble();
+                    scanner.nextLine(); // Limpar buffer
+                    System.out.print("Email: ");
+                    String email = scanner.nextLine();
+                    System.out.print("CPF: ");
+                    String cpf = scanner.nextLine();
+                    // Cria o objeto e envia para o controlador
+                    Usuario novoCliente = new Usuario(nome, idade, peso, altura, email, cpf);
+                    controladorCliente.cadastrarCliente(novoCliente);
+                    break;
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Erro: Entrada inválida, por favor digite um número.");
-            } catch (DateTimeParseException e) {
-                System.out.println("Erro: Formato de data ou hora inválido. Use o formato (dd/MM/yyyy) ou (dd/MM/yyyy HH:mm).");
-            } catch (Exception e) {
-                System.out.println("Ocorreu um erro: " + e.getMessage());
+                case 2: { // Buscar Cliente
+                    System.out.print("Digite o CPF do cliente: ");
+                    String cpf = scanner.nextLine();
+                    Usuario cliente = controladorCliente.buscarCliente(cpf);
+                    if (cliente != null) {
+                        System.out.println("Cliente encontrado: " + cliente.getNome() + ", Email: " + cliente.getEmail());
+                    } else {
+                        System.out.println("Cliente não encontrado.");
+                    }
+                    break;
+                }
+                case 3: { // Atualizar Cliente
+                    System.out.print("Digite o CPF do cliente a ser atualizado: ");
+                    String cpf = scanner.nextLine();
+                    Usuario cliente = controladorCliente.buscarCliente(cpf);
+                    if (cliente != null) {
+                        System.out.print("Digite o novo Nome (deixe em branco para manter [" + cliente.getNome() + "]): ");
+                        String nome = scanner.nextLine();
+                        if (!nome.isEmpty()) {
+                            cliente.setNome(nome); // Exemplo de atualização (só do nome)
+                        }
+                        controladorCliente.atualizarCliente(cliente);
+                    } else {
+                        System.out.println("Cliente não encontrado.");
+                    }
+                    break;
+                }
+                case 4: { // Remover Cliente
+                    System.out.print("Digite o CPF do cliente a ser removido: ");
+                    String cpf = scanner.nextLine();
+                    controladorCliente.removerCliente(cpf);
+                    break;
+                }
+                case 5: { // Cadastrar Treino
+                    System.out.print("Digite o CPF do usuário que realizou o treino: ");
+                    String cpf = scanner.nextLine();
+                    Usuario usuario = controladorCliente.buscarCliente(cpf);
+                    if (usuario != null) {
+                        System.out.print("Tipo de Treino (1: Corrida, 2: Intervalado): ");
+                        int tipo = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("Nome do Treino (ex: 'Corrida na praia'): ");
+                        String nome = scanner.nextLine();
+                        System.out.print("Duração (em minutos): ");
+                        int duracao = scanner.nextInt();
+                        scanner.nextLine();
+
+                        Treino treino = null;
+                        if (tipo == 1) {
+                            System.out.print("Distância (em metros): ");
+                            double dist = scanner.nextDouble();
+                            scanner.nextLine();
+                            treino = new Corrida(new Date(), duracao, nome, dist);
+                        } else if (tipo == 2) {
+                            System.out.print("Número de Séries: ");
+                            int series = scanner.nextInt();
+                            System.out.print("Descanso entre séries (segundos): ");
+                            int descanso = scanner.nextInt();
+                            scanner.nextLine();
+                            treino = new Intervalado(new Date(), duracao, nome, series, descanso);
+                        }
+                        
+                        if (treino != null) {
+                            // O controlador agora chama o TreinoProgresso automaticamente
+                            controladorTreino.cadastrarTreino(usuario, treino);
+                        } else {
+                            System.out.println("Tipo de treino inválido.");
+                        }
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+                case 6: { // Cadastrar Meta
+                    System.out.print("Digite o CPF do usuário: ");
+                    String cpf = scanner.nextLine();
+                    Usuario usuario = controladorCliente.buscarCliente(cpf);
+                    if (usuario != null) {
+                        System.out.print("Descrição da Meta (ex: 'Correr 5km'): ");
+                        String desc = scanner.nextLine();
+                        System.out.print("Tipo (1: Distância, 2: Tempo): ");
+                        int tipo = scanner.nextInt();
+                        scanner.nextLine();
+                        
+                        Meta meta = null;
+                        if (tipo == 1) {
+                            System.out.print("Distância da Meta (em metros): ");
+                            double dist = scanner.nextDouble();
+                            scanner.nextLine();
+                            meta = new Meta(desc, TipoMeta.DISTANCIA);
+                            meta.setDistancia(dist); 
+                        } else if (tipo == 2) {
+                             System.out.print("Tempo da Meta (em minutos): ");
+                             double tempo = scanner.nextDouble();
+                             scanner.nextLine();
+                             meta = new Meta(desc, TipoMeta.TEMPO);
+                             meta.setTempo(tempo);
+                        }
+
+                        if(meta != null) {
+                            controladorMeta.cadastrarMeta(usuario, meta);
+                        } else {
+                            System.out.println("Tipo de meta inválido.");
+                        }
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+                case 7: { // Cadastrar Plano de Treino
+                    System.out.print("Digite o CPF do usuário: ");
+                    String cpf = scanner.nextLine();
+                    Usuario usuario = controladorCliente.buscarCliente(cpf);
+                    if (usuario != null) {
+                        System.out.print("Nome do Plano (ex: 'Plano Maratona'): ");
+                        String nome = scanner.nextLine();
+                        // Simulação de datas
+                        PlanoTreino plano = new PlanoTreino(nome, new Date(), new Date());
+                        // Simplificação: Adicionando um treino de corrida ao plano
+                        plano.adicionarTreino(new Corrida(new Date(), 30, "Corrida Leve (Planejada)", 3000));
+                        controladorPlanoTreino.cadastrarPlanoTreino(usuario, plano);
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+                case 8: { // Cadastrar Desafio
+                    System.out.print("Nome do Desafio (ex: 'Desafio de Dezembro'): ");
+                    String nome = scanner.nextLine();
+                    Desafio desafio = new Desafio(nome, new Date(), new Date());
+                    controladorDesafio.cadastrarDesafio(desafio);
+                    break;
+                }
+                case 9: { // Ranking do Desafio
+                    System.out.print("Nome do Desafio: ");
+                    String nome = scanner.nextLine();
+                    Desafio desafio = controladorDesafio.buscarDesafio(nome);
+                    if (desafio != null) {
+                        // Simulação de geração de ranking
+                        controladorDesafio.gerarRanking(desafio);
+                    } else {
+                        System.out.println("Desafio não encontrado.");
+                    }
+                    break;
+                }
+
+                case 10: { //Relatório de Atividades
+                    System.out.print("Digite o CPF do usuário para o relatório: ");
+                    String cpf = scanner.nextLine();
+                    Usuario u = controladorCliente.buscarCliente(cpf);
+                    if (u != null) {
+                        Relatorio rel = new Relatorio(u);
+                        rel.gerarRelatorioAtividades();
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+
+                case 11: { //Relatório de Evolução
+                    System.out.print("Digite o CPF do usuário para o relatório: ");
+                    String cpf = scanner.nextLine();
+                    Usuario u = controladorCliente.buscarCliente(cpf);
+                    if (u != null) {
+                        Relatorio rel = new Relatorio(u);
+                        rel.gerarRelatorioEvolucao();
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+
+                case 12: { //Exportar Relatório
+                    System.out.print("Digite o CPF do usuário para exportar: ");
+                    String cpf = scanner.nextLine();
+                    Usuario u = controladorCliente.buscarCliente(cpf);
+                    if (u != null) {
+                        System.out.print("Digite o nome do arquivo (ex: relatorio.txt): ");
+                        String nomeArquivo = scanner.nextLine();
+                        Relatorio rel = new Relatorio(u);
+                        rel.exportar(nomeArquivo); // Cria um arquivo .txt
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+
+                case 13: { // Ver Notificações
+                    System.out.print("Digite o CPF do usuário para ver as notificações: ");
+                    String cpf = scanner.nextLine();
+                    Usuario u = controladorCliente.buscarCliente(cpf);
+                    if (u != null) {
+                        controladorCliente.verNotificacoes(u); 
+                    } else {
+                        System.out.println("Usuário não encontrado.");
+                    }
+                    break;
+                }
+                
+
+                case 0: // Sair
+                    System.out.println("Saindo do sistema...");
+                    break;
+                default: // Opção Inválida
+                    System.out.println("Opção inválida! Tente novamente.");
+                    break;
             }
+        } while (opcao != 0); // O loop continua enquanto a opção não for 0
 
-            if (opcao != 0) {
-                System.out.println("\nPressione Enter para continuar...");
-                scanner.nextLine();
-            }
-        }
-        scanner.close();
-    }
-
-    private static void exibirMenu() {
-        System.out.println("\n--- Sistema de Treinos e Corridas ---");
-        System.out.println("--- CRUD Cliente ---");
-        System.out.println("1. Cadastrar Cliente");
-        System.out.println("2. Buscar Cliente");
-        System.out.println("3. Atualizar Cliente");
-        System.out.println("4. Remover Cliente");
-        System.out.println("--- CRUD Treino ---");
-        System.out.println("5. Cadastrar Treino");
-        System.out.println("6. Listar Treinos por Cliente");
-        System.out.println("7. Atualizar Treino");
-        System.out.println("8. Remover Treino");
-        System.out.println("--- CRUD Meta ---");
-        System.out.println("9. Cadastrar Meta");
-        System.out.println("10. Listar Metas por Cliente");
-        System.out.println("11. Atualizar Meta");
-        System.out.println("12. Remover Meta");
-        System.out.println("--- CRUD Plano de Treino ---");
-        System.out.println("13. Cadastrar Plano de Treino");
-        System.out.println("14. Listar Planos por Cliente");
-        System.out.println("15. Remover Plano de Treino");
-        System.out.println("16. Adicionar Treino ao Plano");
-        System.out.println("17. Remover Treino do Plano");
-        System.out.println("--- CRUD Desafio ---");
-        System.out.println("18. Cadastrar Desafio");
-        System.out.println("19. Listar Desafios");
-        System.out.println("20. Participar de Desafio");
-        System.out.println("21. Registrar Progresso em Desafio");
-        System.out.println("22. Ver Ranking de Desafio");
-        System.out.println("0. Sair");
-        System.out.print("Escolha uma opção: ");
-    }
-
-    // --- Métodos Cliente ---
-    private static void cadastrarCliente() throws Exception {
-        System.out.print("CPF: ");
-        String cpf = scanner.nextLine();
-        System.out.print("Nome: ");
-        String nome = scanner.nextLine();
-        System.out.print("Email: ");
-        String email = scanner.nextLine();
-        System.out.print("Idade: ");
-        int idade = Integer.parseInt(scanner.nextLine());
-        System.out.print("Peso (kg): ");
-        double peso = Double.parseDouble(scanner.nextLine());
-        System.out.print("Altura (m): ");
-        double altura = Double.parseDouble(scanner.nextLine());
-
-        Usuario novoUsuario = new Usuario(nome, idade, peso, altura, email, cpf);
-        controladorCliente.cadastrar(novoUsuario);
-        System.out.println("Cliente cadastrado com sucesso!");
-    }
-
-    private static void buscarCliente() throws Exception {
-        System.out.print("CPF do cliente a buscar: ");
-        String cpf = scanner.nextLine();
-        Usuario usuario = controladorCliente.buscar(cpf);
-        System.out.println("Cliente encontrado: " + usuario);
-    }
-
-    private static void atualizarCliente() throws Exception {
-        System.out.print("CPF do cliente a atualizar: ");
-        String cpf = scanner.nextLine();
-        Usuario usuario = controladorCliente.buscar(cpf); // Busca primeiro
-
-        System.out.print("Novo Nome (" + usuario.getNome() + "): ");
-        String nome = scanner.nextLine();
-        System.out.print("Novo Email (" + usuario.getEmail() + "): ");
-        String email = scanner.nextLine();
-        System.out.print("Nova Idade (" + usuario.getIdade() + "): ");
-        int idade = Integer.parseInt(scanner.nextLine());
-        System.out.print("Novo Peso (" + usuario.getPeso() + "): ");
-        double peso = Double.parseDouble(scanner.nextLine());
-        System.out.print("Nova Altura (" + usuario.getAltura() + "): ");
-        double altura = Double.parseDouble(scanner.nextLine());
-
-        // Atualiza o objeto
-        usuario.setNome(nome);
-        usuario.setEmail(email);
-        usuario.setIdade(idade);
-        usuario.setPeso(peso);
-        usuario.setAltura(altura);
-
-        controladorCliente.atualizar(usuario);
-        System.out.println("Cliente atualizado com sucesso!");
-    }
-
-    private static void removerCliente() throws Exception {
-        System.out.print("CPF do cliente a remover: ");
-        String cpf = scanner.nextLine();
-        controladorCliente.remover(cpf);
-        System.out.println("Cliente removido com sucesso!");
-    }
-
-    // --- Métodos Treino ---
-    private static void cadastrarTreino() throws Exception {
-        System.out.print("CPF do cliente: ");
-        String cpf = scanner.nextLine();
-        System.out.print("Nome do Treino (ex: Corrida leve): ");
-        String nomeTreino = scanner.nextLine();
-        System.out.print("Data e Hora (dd/MM/yyyy HH:mm): ");
-        LocalDateTime data = LocalDateTime.parse(scanner.nextLine(), dtf);
-        System.out.print("Duração (minutos): ");
-        double duracaoMinutos = Double.parseDouble(scanner.nextLine());
-        System.out.print("Tipo (corrida/intervalado): ");
-        String tipo = scanner.nextLine();
-
-        Double distanciaKm = null;
-        Integer series = null;
-        Double tempoDescansoMinutos = null;
-
-        if ("corrida".equalsIgnoreCase(tipo)) {
-            System.out.print("Distância (km): ");
-            distanciaKm = Double.parseDouble(scanner.nextLine());
-        } else if ("intervalado".equalsIgnoreCase(tipo)) {
-            System.out.print("Séries: ");
-            series = Integer.parseInt(scanner.nextLine());
-            System.out.print("Tempo de Descanso (minutos): ");
-            tempoDescansoMinutos = Double.parseDouble(scanner.nextLine());
-        }
-
-        controladorTreino.cadastrarTreino(cpf, nomeTreino, data, duracaoMinutos, tipo, distanciaKm, series, tempoDescansoMinutos);
-        System.out.println("Treino cadastrado com sucesso!");
-    }
-
-    private static void listarTreinos() throws Exception {
-        System.out.print("CPF do cliente: ");
-        String cpf = scanner.nextLine();
-        List<Treino> treinos = controladorTreino.listarTreinos(cpf);
-        if (treinos.isEmpty()) {
-            System.out.println("Nenhum treino cadastrado para este cliente.");
-            return;
-        }
-        System.out.println("Treinos do cliente:");
-        for (Treino treino : treinos) {
-            System.out.println(treino.getIdTreino() + ": " + treino);
-        }
-    }
-
-    private static void atualizarTreino() throws Exception {
-        System.out.print("CPF do cliente: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID do treino a atualizar: ");
-        int idTreino = Integer.parseInt(scanner.nextLine());
-        System.out.print("Nova data e hora (dd/MM/yyyy HH:mm): ");
-        LocalDateTime novaData = LocalDateTime.parse(scanner.nextLine(), dtf);
-        System.out.print("Nova duração (minutos): ");
-        double novaDuracao = Double.parseDouble(scanner.nextLine());
-
-        controladorTreino.atualizarTreino(cpf, idTreino, novaData, novaDuracao);
-    }
-
-    private static void removerTreino() throws Exception {
-        System.out.print("CPF do cliente: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID do treino a remover: ");
-        int idTreino = Integer.parseInt(scanner.nextLine());
-        controladorTreino.removerTreino(cpf, idTreino);
-    }
-
-    // --- Métodos Meta ---
-    private static void cadastrarMeta() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("Descrição da meta: ");
-        String desc = scanner.nextLine();
-        System.out.print("Tipo (DISTANCIA, TEMPO, CALORIAS): ");
-        TipoMeta tipo = TipoMeta.valueOf(scanner.nextLine().toUpperCase());
-        System.out.print("Valor Alvo (km, min, kcal): ");
-        double valor = Double.parseDouble(scanner.nextLine());
-        System.out.print("Data Limite (dd/MM/yyyy): ");
-        LocalDate data = LocalDate.parse(scanner.nextLine(), df);
-
-        controladorMeta.cadastrarMeta(cpf, desc, tipo, valor, data);
-    }
-
-    private static void listarMetas() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        List<Meta> metas = controladorMeta.listarMetas(cpf);
-        if (metas.isEmpty()) {
-            System.out.println("Nenhuma meta cadastrada.");
-            return;
-        }
-        for (Meta meta : metas) {
-            System.out.println(meta.getIdMeta() + ": " + meta.getDescricao() + " - Progresso: " + meta.getProgressoAtual() + "/" + meta.getValorAlvo());
-        }
-    }
-
-    private static void atualizarMeta() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID da meta a atualizar: ");
-        int idMeta = Integer.parseInt(scanner.nextLine());
-        System.out.print("Nova Descrição: ");
-        String desc = scanner.nextLine();
-        System.out.print("Novo Valor Alvo: ");
-        double valor = Double.parseDouble(scanner.nextLine());
-        System.out.print("Nova Data Limite (dd/MM/yyyy): ");
-        LocalDate data = LocalDate.parse(scanner.nextLine(), df);
-
-        controladorMeta.atualizarMeta(cpf, idMeta, desc, valor, data);
-    }
-
-    private static void removerMeta() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID da meta a remover: ");
-        int idMeta = Integer.parseInt(scanner.nextLine());
-        controladorMeta.removerMeta(cpf, idMeta);
-    }
-
-    // --- Métodos Plano de Treino ---
-    private static void cadastrarPlanoTreino() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("Nome do plano: ");
-        String nome = scanner.nextLine();
-        System.out.print("Data Início (dd/MM/yyyy): ");
-        LocalDate dataInicio = LocalDate.parse(scanner.nextLine(), df);
-        System.out.print("Data Fim (dd/MM/yyyy): ");
-        LocalDate dataFim = LocalDate.parse(scanner.nextLine(), df);
-
-        controladorPlanoTreino.cadastrarPlano(cpf, nome, dataInicio, dataFim);
-    }
-
-    private static void listarPlanosTreino() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        List<PlanoTreino> planos = controladorPlanoTreino.listarPlanos(cpf);
-        if (planos.isEmpty()) {
-            System.out.println("Nenhum plano cadastrado.");
-            return;
-        }
-        for (PlanoTreino plano : planos) {
-            System.out.println(plano.getIdPlano() + ": " + plano.getNome());
-            System.out.println("  Treinos no plano:");
-            if (plano.getTreinosDoPlano().isEmpty()) {
-                System.out.println("    Nenhum treino adicionado.");
-            }
-            for (Treino t : plano.getTreinosDoPlano()) {
-                System.out.println("    - " + t.getIdTreino() + ": " + t.getNomeTreino());
-            }
-        }
-    }
-
-    private static void removerPlanoTreino() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID do plano a remover: ");
-        int idPlano = Integer.parseInt(scanner.nextLine());
-        controladorPlanoTreino.removerPlano(cpf, idPlano);
-    }
-
-    private static void adicionarTreinoPlano() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID do plano: ");
-        int idPlano = Integer.parseInt(scanner.nextLine());
-        System.out.print("ID do treino (deve estar cadastrado no usuário): ");
-        int idTreino = Integer.parseInt(scanner.nextLine());
-
-        controladorPlanoTreino.adicionarTreinoPlano(cpf, idPlano, idTreino);
-    }
-
-    private static void removerTreinoPlano() throws Exception {
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("ID do plano: ");
-        int idPlano = Integer.parseInt(scanner.nextLine());
-        System.out.print("ID do treino a remover do plano: ");
-        int idTreino = Integer.parseInt(scanner.nextLine());
-
-        controladorPlanoTreino.removerTreinoPlano(cpf, idPlano, idTreino);
-    }
-
-    // --- Métodos Desafio ---
-    private static void cadastrarDesafio() throws Exception {
-        System.out.print("Nome do desafio: ");
-        String nome = scanner.nextLine();
-        System.out.print("Descrição: ");
-        String desc = scanner.nextLine();
-        System.out.print("Data Início (dd/MM/yyyy): ");
-        LocalDate dataInicio = LocalDate.parse(scanner.nextLine(), df);
-        System.out.print("Data Fim (dd/MM/yyyy): ");
-        LocalDate dataFim = LocalDate.parse(scanner.nextLine(), df);
-
-        controladorDesafio.cadastrarDesafio(nome, desc, dataInicio, dataFim);
-    }
-
-    private static void listarDesafios() {
-        List<Desafio> desafios = controladorDesafio.listarDesafios();
-        if (desafios.isEmpty()) {
-            System.out.println("Nenhum desafio cadastrado no sistema.");
-            return;
-        }
-        for (Desafio d : desafios) {
-            System.out.println(d.getIdDesafio() + ": " + d.getNome());
-        }
-    }
-
-    private static void participarDesafio() throws Exception {
-        System.out.print("ID do desafio: ");
-        int idDesafio = Integer.parseInt(scanner.nextLine());
-        System.out.print("CPF do usuário participante: ");
-        String cpf = scanner.nextLine();
-
-        controladorDesafio.participarDesafio(idDesafio, cpf);
-    }
-
-    private static void registrarProgressoDesafio() throws Exception {
-        System.out.print("ID do desafio: ");
-        int idDesafio = Integer.parseInt(scanner.nextLine());
-        System.out.print("CPF do usuário: ");
-        String cpf = scanner.nextLine();
-        System.out.print("Progresso a adicionar (ex: km corridos): ");
-        double progresso = Double.parseDouble(scanner.nextLine());
-
-        controladorDesafio.registrarProgresso(idDesafio, cpf, progresso);
-    }
-
-    private static void verRankingDesafio() throws Exception {
-        System.out.print("ID do desafio para ver o ranking: ");
-        int idDesafio = Integer.parseInt(scanner.nextLine());
-        Desafio desafio = controladorDesafio.buscarDesafio(idDesafio);
-
-        // O método gerarRankingDesafio está na classe Relatorio e retorna uma String
-        String ranking = relatorio.gerarRankingDesafio(desafio);
-        System.out.println(ranking); // Imprime o relatório
+        // --- 4. Encerramento ---
+        scanner.close(); // Fecha o recurso do scanner
     }
 }
-

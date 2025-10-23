@@ -1,58 +1,103 @@
 package br.com.negocio;
 
 import br.com.dados.IRepositorioCliente;
+import br.com.negocio.treinos.Notificacao;
 import br.com.negocio.treinos.Usuario;
+import java.util.List;
 
 /**
- * Classe corrigida:
- * - Não é mais abstract
- * - Não usa métodos static
- * - Mantém uma instância do repositório (injeção de dependência)
- * - Busca usuários por CPF
+ * Controlador (Camada de Negócio) para operações relacionadas a Clientes (Usuários).
+ * Faz a ponte entre a Interface (Principal.java) e os Dados (RepositorioCliente).
  */
 public class ControladorCliente {
+
     
     private IRepositorioCliente repositorioCliente;
 
-    public ControladorCliente(IRepositorioCliente repositorio) {
-        this.repositorioCliente = repositorio;
+    // --- Construtor ---
+   
+    public ControladorCliente(IRepositorioCliente repositorioCliente) {
+        this.repositorioCliente = repositorioCliente;
     }
 
-    public void cadastrar(Usuario usuario) throws Exception {
+    // --- Métodos de CRUD (Create, Read, Update, Delete) ---
+
+    /**
+     * Cadastra um novo cliente, se o CPF não existir.
+     */
+    public void cadastrarCliente(Usuario cliente) {
+        if (repositorioCliente.buscarCliente(cliente.getCpf()) == null) {
+            repositorioCliente.adicionarCliente(cliente);
+            System.out.println("Cliente cadastrado com sucesso!");
+        } else {
+            System.out.println("CPF já cadastrado.");
+        }
+    }
+
+    //Busca um cliente pelo CPF.
+    public Usuario buscarCliente(String cpf) {
+        return repositorioCliente.buscarCliente(cpf);
+    }
+
+    // Remove um cliente pelo CPF.
+    public void removerCliente(String cpf) {
+        if (repositorioCliente.buscarCliente(cpf) != null) {
+            repositorioCliente.removerCliente(cpf);
+            System.out.println("Cliente removido com sucesso!");
+        } else {
+            System.out.println("Cliente não encontrado.");
+        }
+    }
+
+    // Atualiza os dados de um cliente existente.
+    public void atualizarCliente(Usuario cliente) {
+        if (repositorioCliente.buscarCliente(cliente.getCpf()) != null) {
+            repositorioCliente.atualizarCliente(cliente);
+            System.out.println("Cliente atualizado com sucesso!");
+        } else {
+            System.out.println("Cliente não encontrado.");
+        }
+    }
+
+    // --- Métodos de Negócio Específicos ---
+
+    /**
+     * Exibe as notificações NÃO LIDAS de um usuário e, em seguida,
+     * limpa as notificações que foram lidas (REQ08, REQ20, REQ21).
+     */
+    public void verNotificacoes(Usuario usuario) {
         if (usuario == null) {
-            throw new Exception("Usuário inválido.");
+            System.out.println("Usuário não encontrado.");
+            return;
         }
-        if (repositorioCliente.buscarElementoPorCpf(usuario.getCpf()) != null) {
-            throw new Exception("Usuário com este CPF já cadastrado.");
-        }
-        repositorioCliente.adicionarElemento(usuario);
-    }
 
-    public Usuario buscar(String cpf) throws Exception {
-        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpf);
-        if (usuario == null) {
-            throw new Exception("Usuário não encontrado.");
-        }
-        return usuario;
-    }
+        List<Notificacao> notificacoes = usuario.getNotificacoes();
+        int notificacoesNovas = 0; // Contador de notificações não lidas
 
-    public void atualizar(Usuario usuario) throws Exception {
-        if (usuario == null) {
-            throw new Exception("Usuário inválido.");
+        System.out.println("--- Notificações de " + usuario.getNome() + " ---");
+        
+        for (Notificacao n : notificacoes) {
+            // Mostra apenas notificações que ainda não foram lidas
+            if (!n.isLida()) {
+                System.out.println(n.getData() + " - " + n.getMensagem());
+                n.setLida(true); // Marca a notificação como lida
+                notificacoesNovas++;
+            }
         }
-        if (repositorioCliente.buscarElementoPorCpf(usuario.getCpf()) == null) {
-            throw new Exception("Usuário não encontrado para atualização.");
-        }
-        repositorioCliente.atualizarElemento(usuario);
-    }
 
-    public void remover(String cpf) throws Exception {
-        if (cpf == null || cpf.isEmpty()) {
-            throw new Exception("CPF inválido.");
+        if (notificacoesNovas == 0) {
+            System.out.println(usuario.getNome() + " não tem novas notificações.");
         }
-        if (repositorioCliente.buscarElementoPorCpf(cpf) == null) {
-            throw new Exception("Usuário não encontrado para remoção.");
+        System.out.println("-------------------------------------");
+        
+        // --- LÓGICA PARA LIMPAR NOTIFICAÇÕES ---
+        // Remove da lista todas as notificações que estão marcadas como "lida".
+        // Isso impede que a lista cresça indefinidamente.
+        boolean removidas = notificacoes.removeIf(Notificacao::isLida);
+        
+        if (removidas && notificacoesNovas > 0) {
+            // (notificacoesNovas > 0) é para não exibir a msg se não tinha nada novo
+            System.out.println(">>> Notificações lidas foram arquivadas (limpas).");
         }
-        repositorioCliente.removerElemento(cpf);
     }
 }
