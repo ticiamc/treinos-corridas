@@ -1,6 +1,7 @@
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,19 +24,20 @@ import br.com.negocio.treinos.Usuario;
 
 public class Principal {
 
-    // Formato de data padrão
-    private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-    
+    // Formatos de data e hora padrão
+    private static DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     // Controladores
     private static ControladorCliente controladorCliente;
     private static ControladorTreino controladorTreino;
     private static ControladorMeta controladorMeta;
     private static ControladorPlanoTreino controladorPlanoTreino;
     private static ControladorDesafio controladorDesafio;
-    
+
     // Relatórios
     private static Relatorio relatorio = new Relatorio();
-    
+
     // Scanner global
     private static Scanner scanner = new Scanner(System.in);
 
@@ -56,7 +58,7 @@ public class Principal {
             exibirMenu();
             try {
                 opcao = Integer.parseInt(scanner.nextLine());
-                
+
                 switch (opcao) {
                     case 1:
                         cadastrarCliente();
@@ -132,11 +134,13 @@ public class Principal {
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Erro: Entrada inválida, por favor digite um número.");
+            } catch (DateTimeParseException e) {
+                System.out.println("Erro: Formato de data ou hora inválido. Use o formato (dd/MM/yyyy) ou (dd/MM/yyyy HH:mm).");
             } catch (Exception e) {
                 System.out.println("Ocorreu um erro: " + e.getMessage());
             }
-            
-            if(opcao != 0) {
+
+            if (opcao != 0) {
                 System.out.println("\nPressione Enter para continuar...");
                 scanner.nextLine();
             }
@@ -187,9 +191,9 @@ public class Principal {
         String email = scanner.nextLine();
         System.out.print("Idade: ");
         int idade = Integer.parseInt(scanner.nextLine());
-        System.out.print("Peso: ");
+        System.out.print("Peso (kg): ");
         double peso = Double.parseDouble(scanner.nextLine());
-        System.out.print("Altura: ");
+        System.out.print("Altura (m): ");
         double altura = Double.parseDouble(scanner.nextLine());
 
         Usuario novoUsuario = new Usuario(nome, idade, peso, altura, email, cpf);
@@ -208,16 +212,24 @@ public class Principal {
         System.out.print("CPF do cliente a atualizar: ");
         String cpf = scanner.nextLine();
         Usuario usuario = controladorCliente.buscar(cpf); // Busca primeiro
-        
+
         System.out.print("Novo Nome (" + usuario.getNome() + "): ");
         String nome = scanner.nextLine();
         System.out.print("Novo Email (" + usuario.getEmail() + "): ");
         String email = scanner.nextLine();
-        
+        System.out.print("Nova Idade (" + usuario.getIdade() + "): ");
+        int idade = Integer.parseInt(scanner.nextLine());
+        System.out.print("Novo Peso (" + usuario.getPeso() + "): ");
+        double peso = Double.parseDouble(scanner.nextLine());
+        System.out.print("Nova Altura (" + usuario.getAltura() + "): ");
+        double altura = Double.parseDouble(scanner.nextLine());
+
         // Atualiza o objeto
         usuario.setNome(nome);
         usuario.setEmail(email);
-        // Outros campos podem ser adicionados
+        usuario.setIdade(idade);
+        usuario.setPeso(peso);
+        usuario.setAltura(altura);
 
         controladorCliente.atualizar(usuario);
         System.out.println("Cliente atualizado com sucesso!");
@@ -234,28 +246,30 @@ public class Principal {
     private static void cadastrarTreino() throws Exception {
         System.out.print("CPF do cliente: ");
         String cpf = scanner.nextLine();
-        System.out.print("Data (dd/MM/yyyy): ");
-        Date data = sdf.parse(scanner.nextLine());
+        System.out.print("Nome do Treino (ex: Corrida leve): ");
+        String nomeTreino = scanner.nextLine();
+        System.out.print("Data e Hora (dd/MM/yyyy HH:mm): ");
+        LocalDateTime data = LocalDateTime.parse(scanner.nextLine(), dtf);
         System.out.print("Duração (minutos): ");
-        double duracao = Double.parseDouble(scanner.nextLine());
+        double duracaoMinutos = Double.parseDouble(scanner.nextLine());
         System.out.print("Tipo (corrida/intervalado): ");
         String tipo = scanner.nextLine();
 
-        Double distancia = null;
+        Double distanciaKm = null;
         Integer series = null;
-        Double tempoDescanso = null;
+        Double tempoDescansoMinutos = null;
 
         if ("corrida".equalsIgnoreCase(tipo)) {
             System.out.print("Distância (km): ");
-            distancia = Double.parseDouble(scanner.nextLine());
+            distanciaKm = Double.parseDouble(scanner.nextLine());
         } else if ("intervalado".equalsIgnoreCase(tipo)) {
             System.out.print("Séries: ");
             series = Integer.parseInt(scanner.nextLine());
             System.out.print("Tempo de Descanso (minutos): ");
-            tempoDescanso = Double.parseDouble(scanner.nextLine());
+            tempoDescansoMinutos = Double.parseDouble(scanner.nextLine());
         }
 
-        controladorTreino.cadastrarTreino(cpf, data, duracao, tipo, distancia, series, tempoDescanso);
+        controladorTreino.cadastrarTreino(cpf, nomeTreino, data, duracaoMinutos, tipo, distanciaKm, series, tempoDescansoMinutos);
         System.out.println("Treino cadastrado com sucesso!");
     }
 
@@ -269,7 +283,7 @@ public class Principal {
         }
         System.out.println("Treinos do cliente:");
         for (Treino treino : treinos) {
-            System.out.println(treino);
+            System.out.println(treino.getIdTreino() + ": " + treino);
         }
     }
 
@@ -278,8 +292,8 @@ public class Principal {
         String cpf = scanner.nextLine();
         System.out.print("ID do treino a atualizar: ");
         int idTreino = Integer.parseInt(scanner.nextLine());
-        System.out.print("Nova data (dd/MM/yyyy): ");
-        Date novaData = sdf.parse(scanner.nextLine());
+        System.out.print("Nova data e hora (dd/MM/yyyy HH:mm): ");
+        LocalDateTime novaData = LocalDateTime.parse(scanner.nextLine(), dtf);
         System.out.print("Nova duração (minutos): ");
         double novaDuracao = Double.parseDouble(scanner.nextLine());
 
@@ -293,7 +307,7 @@ public class Principal {
         int idTreino = Integer.parseInt(scanner.nextLine());
         controladorTreino.removerTreino(cpf, idTreino);
     }
-    
+
     // --- Métodos Meta ---
     private static void cadastrarMeta() throws Exception {
         System.out.print("CPF do usuário: ");
@@ -305,8 +319,8 @@ public class Principal {
         System.out.print("Valor Alvo (km, min, kcal): ");
         double valor = Double.parseDouble(scanner.nextLine());
         System.out.print("Data Limite (dd/MM/yyyy): ");
-        Date data = sdf.parse(scanner.nextLine());
-        
+        LocalDate data = LocalDate.parse(scanner.nextLine(), df);
+
         controladorMeta.cadastrarMeta(cpf, desc, tipo, valor, data);
     }
 
@@ -314,12 +328,12 @@ public class Principal {
         System.out.print("CPF do usuário: ");
         String cpf = scanner.nextLine();
         List<Meta> metas = controladorMeta.listarMetas(cpf);
-        if(metas.isEmpty()) {
+        if (metas.isEmpty()) {
             System.out.println("Nenhuma meta cadastrada.");
             return;
         }
-        for(Meta meta : metas) {
-            System.out.println(meta);
+        for (Meta meta : metas) {
+            System.out.println(meta.getIdMeta() + ": " + meta.getDescricao() + " - Progresso: " + meta.getProgressoAtual() + "/" + meta.getValorAlvo());
         }
     }
 
@@ -333,8 +347,8 @@ public class Principal {
         System.out.print("Novo Valor Alvo: ");
         double valor = Double.parseDouble(scanner.nextLine());
         System.out.print("Nova Data Limite (dd/MM/yyyy): ");
-        Date data = sdf.parse(scanner.nextLine());
-        
+        LocalDate data = LocalDate.parse(scanner.nextLine(), df);
+
         controladorMeta.atualizarMeta(cpf, idMeta, desc, valor, data);
     }
 
@@ -353,10 +367,10 @@ public class Principal {
         System.out.print("Nome do plano: ");
         String nome = scanner.nextLine();
         System.out.print("Data Início (dd/MM/yyyy): ");
-        Date dataInicio = sdf.parse(scanner.nextLine());
+        LocalDate dataInicio = LocalDate.parse(scanner.nextLine(), df);
         System.out.print("Data Fim (dd/MM/yyyy): ");
-        Date dataFim = sdf.parse(scanner.nextLine());
-        
+        LocalDate dataFim = LocalDate.parse(scanner.nextLine(), df);
+
         controladorPlanoTreino.cadastrarPlano(cpf, nome, dataInicio, dataFim);
     }
 
@@ -364,22 +378,22 @@ public class Principal {
         System.out.print("CPF do usuário: ");
         String cpf = scanner.nextLine();
         List<PlanoTreino> planos = controladorPlanoTreino.listarPlanos(cpf);
-        if(planos.isEmpty()) {
+        if (planos.isEmpty()) {
             System.out.println("Nenhum plano cadastrado.");
             return;
         }
-        for(PlanoTreino plano : planos) {
-            System.out.println(plano);
+        for (PlanoTreino plano : planos) {
+            System.out.println(plano.getIdPlano() + ": " + plano.getNome());
             System.out.println("  Treinos no plano:");
-            if(plano.getTreinos().isEmpty()) {
+            if (plano.getTreinosDoPlano().isEmpty()) {
                 System.out.println("    Nenhum treino adicionado.");
             }
-            for(Treino t : plano.getTreinos()) {
-                System.out.println("    - " + t);
+            for (Treino t : plano.getTreinosDoPlano()) {
+                System.out.println("    - " + t.getIdTreino() + ": " + t.getNomeTreino());
             }
         }
     }
-    
+
     private static void removerPlanoTreino() throws Exception {
         System.out.print("CPF do usuário: ");
         String cpf = scanner.nextLine();
@@ -395,10 +409,10 @@ public class Principal {
         int idPlano = Integer.parseInt(scanner.nextLine());
         System.out.print("ID do treino (deve estar cadastrado no usuário): ");
         int idTreino = Integer.parseInt(scanner.nextLine());
-        
+
         controladorPlanoTreino.adicionarTreinoPlano(cpf, idPlano, idTreino);
     }
-    
+
     private static void removerTreinoPlano() throws Exception {
         System.out.print("CPF do usuário: ");
         String cpf = scanner.nextLine();
@@ -406,7 +420,7 @@ public class Principal {
         int idPlano = Integer.parseInt(scanner.nextLine());
         System.out.print("ID do treino a remover do plano: ");
         int idTreino = Integer.parseInt(scanner.nextLine());
-        
+
         controladorPlanoTreino.removerTreinoPlano(cpf, idPlano, idTreino);
     }
 
@@ -417,21 +431,21 @@ public class Principal {
         System.out.print("Descrição: ");
         String desc = scanner.nextLine();
         System.out.print("Data Início (dd/MM/yyyy): ");
-        Date dataInicio = sdf.parse(scanner.nextLine());
+        LocalDate dataInicio = LocalDate.parse(scanner.nextLine(), df);
         System.out.print("Data Fim (dd/MM/yyyy): ");
-        Date dataFim = sdf.parse(scanner.nextLine());
-        
+        LocalDate dataFim = LocalDate.parse(scanner.nextLine(), df);
+
         controladorDesafio.cadastrarDesafio(nome, desc, dataInicio, dataFim);
     }
 
     private static void listarDesafios() {
         List<Desafio> desafios = controladorDesafio.listarDesafios();
-        if(desafios.isEmpty()) {
+        if (desafios.isEmpty()) {
             System.out.println("Nenhum desafio cadastrado no sistema.");
             return;
         }
-        for(Desafio d : desafios) {
-            System.out.println(d);
+        for (Desafio d : desafios) {
+            System.out.println(d.getIdDesafio() + ": " + d.getNome());
         }
     }
 
@@ -440,7 +454,7 @@ public class Principal {
         int idDesafio = Integer.parseInt(scanner.nextLine());
         System.out.print("CPF do usuário participante: ");
         String cpf = scanner.nextLine();
-        
+
         controladorDesafio.participarDesafio(idDesafio, cpf);
     }
 
@@ -451,16 +465,18 @@ public class Principal {
         String cpf = scanner.nextLine();
         System.out.print("Progresso a adicionar (ex: km corridos): ");
         double progresso = Double.parseDouble(scanner.nextLine());
-        
+
         controladorDesafio.registrarProgresso(idDesafio, cpf, progresso);
     }
-    
+
     private static void verRankingDesafio() throws Exception {
         System.out.print("ID do desafio para ver o ranking: ");
         int idDesafio = Integer.parseInt(scanner.nextLine());
         Desafio desafio = controladorDesafio.buscarDesafio(idDesafio);
-        
-        // O método gerarRankingDesafio está na classe Relatorio
-        relatorio.gerarRankingDesafio(desafio);
+
+        // O método gerarRankingDesafio está na classe Relatorio e retorna uma String
+        String ranking = relatorio.gerarRankingDesafio(desafio);
+        System.out.println(ranking); // Imprime o relatório
     }
 }
+

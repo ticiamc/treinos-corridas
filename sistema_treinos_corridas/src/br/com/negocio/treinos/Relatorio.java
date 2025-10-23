@@ -22,14 +22,17 @@ public class Relatorio {
         conteudo.append("====================================================\n\n");
 
         List<Treino> treinosNoPeriodo = usuario.getTreinos().stream()
-                .filter(t -> !t.getDataExecucao().toLocalDate().isBefore(inicio) && !t.getDataExecucao().toLocalDate().isAfter(fim))
+                // Garante que a data do treino NÃO é anterior ao início E NÃO é posterior ao fim
+                .filter(t -> !t.getDataExecucao().toLocalDate().isBefore(inicio) && 
+                             !t.getDataExecucao().toLocalDate().isAfter(fim))
                 .collect(Collectors.toList());
 
         if (treinosNoPeriodo.isEmpty()) {
             conteudo.append("Nenhuma atividade registrada no período.\n");
         } else {
             for (Treino treino : treinosNoPeriodo) {
-                conteudo.append(treino.toString()).append("\n");
+                // treino.toString() já está formatado (Corrida ou Intervalado)
+                conteudo.append(treino.toString()).append("\n"); 
             }
         }
         
@@ -47,7 +50,7 @@ public class Relatorio {
             conteudo.append("Nenhum treino registrado para analisar a evolução.\n");
         } else {
             double distanciaTotal = usuario.getTreinos().stream()
-                .filter(t -> t instanceof Corrida)
+                .filter(t -> t instanceof Corrida) // Filtra apenas Corridas
                 .mapToDouble(t -> ((Corrida) t).getDistanciaEmMetros())
                 .sum();
 
@@ -73,6 +76,7 @@ public class Relatorio {
         if (desafio.getParticipacoes().isEmpty()) {
             conteudo.append("Nenhum participante no desafio.\n");
         } else {
+            // Ordena a lista de participações pelo progresso, em ordem decrescente
             List<ParticipacaoDesafio> ranking = desafio.getParticipacoes().stream()
                 .sorted(Comparator.comparingDouble(ParticipacaoDesafio::getProgresso).reversed())
                 .collect(Collectors.toList());
@@ -91,9 +95,14 @@ public class Relatorio {
     }
 
 
+    /**
+     * Simula a exportação de um relatório para um formato (PDF ou CSV).
+     * No mundo real, aqui entrariam bibliotecas como iText (PDF) ou Apache POI (CSV).
+     */
     public void exportar(String conteudo, String formato) {
         System.out.println("--- SIMULANDO EXPORTAÇÃO PARA " + formato.toUpperCase() + " ---");
         System.out.println(conteudo);
         System.out.println("--- FIM DA EXPORTAÇÃO ---");
     }
 }
+

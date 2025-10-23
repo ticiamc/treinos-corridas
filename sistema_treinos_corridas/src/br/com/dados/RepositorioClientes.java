@@ -1,6 +1,7 @@
 package br.com.dados;
 import br.com.negocio.treinos.Usuario;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RepositorioClientes implements IRepositorioCliente{
     private ArrayList<Usuario> clientes;
@@ -9,8 +10,7 @@ public class RepositorioClientes implements IRepositorioCliente{
         this.clientes = new ArrayList<Usuario>(); 
     }
     
-
-    public ArrayList<Usuario> getClientes() {
+    public List<Usuario> getClientes() {
         return clientes;
     }
 
@@ -20,23 +20,34 @@ public class RepositorioClientes implements IRepositorioCliente{
         this.clientes.add(cliente);
     }
 
-    // Read
+    // Read by CPF
     @Override
-    public Usuario buscarElemento(String nome){
+    public Usuario buscarElementoPorCpf(String cpf){
+        for (Usuario u: clientes){
+            if (u.getCpf().equals(cpf)){
+                return u;
+            }
+        }
+        return null;
+    }
+
+    // Read by Name
+    @Override
+    public Usuario buscarElementoPorNome(String nome){
         for (Usuario u: clientes){
             if (u.getNome().equalsIgnoreCase(nome)){
                 return u;
             }
         }
-
         return null;
     }
 
     // Update
     @Override
-    public void atualizarElemento(String nome, Usuario cliente){
+    public void atualizarElemento(Usuario cliente){
+        // Encontra o cliente pelo CPF e atualiza
         for (int i = 0; i < clientes.size(); i++){
-            if (clientes.get(i).getNome().equalsIgnoreCase(nome)){
+            if (clientes.get(i).getCpf().equals(cliente.getCpf())){
                 clientes.set(i, cliente);
                 break;
             }
@@ -45,12 +56,12 @@ public class RepositorioClientes implements IRepositorioCliente{
 
     // Delete
     @Override
-    public void removerElemento(String nome){
-        this.clientes.removeIf(u -> u.getNome().equalsIgnoreCase(nome));
+    public void removerElemento(String cpf){
+        this.clientes.removeIf(u -> u.getCpf().equals(cpf));
     }
 
-
-
-
-
+    @Override
+    public List<Usuario> listarTodos() {
+        return new ArrayList<>(clientes); // Retorna uma cópia para evitar modificação externa
+    }
 }

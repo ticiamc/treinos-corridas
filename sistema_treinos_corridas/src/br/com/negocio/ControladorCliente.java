@@ -1,37 +1,58 @@
 package br.com.negocio;
 
-import br.com.dados.RepositorioClientes;
+import br.com.dados.IRepositorioCliente;
 import br.com.negocio.treinos.Usuario;
 
-public abstract class ControladorCliente {
-    // Métodos para clientes
-    public static void cadastrarUsuario(String nome, int idade, float peso, float altura, String email, RepositorioClientes repositorio){
-        Usuario user = new Usuario(nome, idade, peso, altura, email);
-        repositorio.adicionarElemento(user);
+/**
+ * Classe corrigida:
+ * - Não é mais abstract
+ * - Não usa métodos static
+ * - Mantém uma instância do repositório (injeção de dependência)
+ * - Busca usuários por CPF
+ */
+public class ControladorCliente {
+    
+    private IRepositorioCliente repositorioCliente;
+
+    public ControladorCliente(IRepositorioCliente repositorio) {
+        this.repositorioCliente = repositorio;
     }
 
-    public static void atualizarUsuario(String nome, RepositorioClientes repositorioClientes, String new_name, int new_idade, float new_peso, float new_altura, String new_email){
-        Usuario clienteEncontrado = repositorioClientes.buscarElemento(nome);
-        if (clienteEncontrado != null){
-            clienteEncontrado.setNome(new_name);
-            clienteEncontrado.setIdade(new_idade);
-            clienteEncontrado.setPeso(new_peso);
-            clienteEncontrado.setAltura(new_altura);
-            clienteEncontrado.setEmail(new_email);
+    public void cadastrar(Usuario usuario) throws Exception {
+        if (usuario == null) {
+            throw new Exception("Usuário inválido.");
         }
-        else{
-            System.out.println("\nUsuário não encontrado!\n");
+        if (repositorioCliente.buscarElementoPorCpf(usuario.getCpf()) != null) {
+            throw new Exception("Usuário com este CPF já cadastrado.");
         }
-
+        repositorioCliente.adicionarElemento(usuario);
     }
 
-    public static void deletarCliente(String nome, RepositorioClientes repositorio){
-        Usuario cliente = repositorio.buscarElemento(nome);
-        if (cliente != null){
-            repositorio.removerElemento(nome);
+    public Usuario buscar(String cpf) throws Exception {
+        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpf);
+        if (usuario == null) {
+            throw new Exception("Usuário não encontrado.");
         }
-        else{
-            System.out.println("\nUsuário não encontrado!\n");
+        return usuario;
+    }
+
+    public void atualizar(Usuario usuario) throws Exception {
+        if (usuario == null) {
+            throw new Exception("Usuário inválido.");
         }
+        if (repositorioCliente.buscarElementoPorCpf(usuario.getCpf()) == null) {
+            throw new Exception("Usuário não encontrado para atualização.");
+        }
+        repositorioCliente.atualizarElemento(usuario);
+    }
+
+    public void remover(String cpf) throws Exception {
+        if (cpf == null || cpf.isEmpty()) {
+            throw new Exception("CPF inválido.");
+        }
+        if (repositorioCliente.buscarElementoPorCpf(cpf) == null) {
+            throw new Exception("Usuário não encontrado para remoção.");
+        }
+        repositorioCliente.removerElemento(cpf);
     }
 }

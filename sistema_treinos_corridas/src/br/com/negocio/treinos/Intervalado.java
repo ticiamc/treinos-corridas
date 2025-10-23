@@ -24,11 +24,12 @@ public class Intervalado extends Treino {
     //  Substitui o método toString() por uma versão personalizada.
     @Override
     public String toString() {
-        return String.format("Treino Intervalado em %s | Duração: %d min | Séries: %d | Descanso: %d seg",
+        return String.format("%s (Intervalado) em %s | Duração: %d min | Séries: %d | Descanso: %d seg",
+            this.nomeTreino, // Adicionado nome do treino
             this.dataExecucao.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
             this.duracaoSegundos / 60,
             this.series,
-            this.descansoEntreSeriesSeg // Olha ele aqui, sendo usado!
+            this.descansoEntreSeriesSeg
         );
     }
 
@@ -50,6 +51,4 @@ public class Intervalado extends Treino {
     public void setDescansoEntreSeriesSeg(int descansoEntreSeriesSeg) {
         this.descansoEntreSeriesSeg = descansoEntreSeriesSeg;
     }
-
-    
 }

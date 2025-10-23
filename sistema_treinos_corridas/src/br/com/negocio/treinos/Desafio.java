@@ -6,6 +6,8 @@ import java.util.List;
 
 public class Desafio {
 
+    private static int proximoId = 1; // Contador estático para IDs
+    private int idDesafio;
     private String nome;
     private String descricao;
     // Campos que guardam o período em que o desafio está rolando:
@@ -18,6 +20,7 @@ public class Desafio {
         if (dataInicio.isAfter(dataFim)) {
             throw new IllegalArgumentException("A data de início não pode ser depois da data de término.");
         }
+        this.idDesafio = proximoId++; // Atribui ID único
         this.nome = nome;
         this.descricao = descricao;
         this.dataInicio = dataInicio;
@@ -38,6 +41,10 @@ public class Desafio {
     }
 
     // --- Getters --- "janelas" públicas e seguras que permitem a outras partes do código ler o valor de um atributo que está protegido como privado dentro de uma classe
+
+    public int getIdDesafio() {
+        return idDesafio;
+    }
 
     public String getNome() {
         return nome;

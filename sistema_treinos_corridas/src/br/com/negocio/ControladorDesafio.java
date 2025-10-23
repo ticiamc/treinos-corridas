@@ -5,7 +5,7 @@ import br.com.dados.IRepositorioDesafio;
 import br.com.negocio.treinos.Desafio;
 import br.com.negocio.treinos.ParticipacaoDesafio;
 import br.com.negocio.treinos.Usuario;
-import java.util.Date;
+import java.time.LocalDate; // Corrigido: import java.util.Date;
 import java.util.List;
 
 public class ControladorDesafio {
@@ -18,7 +18,7 @@ public class ControladorDesafio {
         this.repositorioCliente = repositorioCliente;
     }
 
-    public void cadastrarDesafio(String nome, String descricao, Date dataInicio, Date dataFim) throws Exception {
+    public void cadastrarDesafio(String nome, String descricao, LocalDate dataInicio, LocalDate dataFim) throws Exception {
         Desafio desafio = new Desafio(nome, descricao, dataInicio, dataFim);
         repositorioDesafio.cadastrar(desafio);
         System.out.println("Desafio cadastrado com sucesso! ID: " + desafio.getIdDesafio());
@@ -29,7 +29,7 @@ public class ControladorDesafio {
     }
 
     public void participarDesafio(int idDesafio, String cpfUsuario) throws Exception {
-        Usuario usuario = repositorioCliente.buscar(cpfUsuario);
+        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario); // Corrigido: buscar
         if (usuario == null) {
             throw new Exception("Usuário não encontrado.");
         }
@@ -39,18 +39,12 @@ public class ControladorDesafio {
             throw new Exception("Desafio não encontrado.");
         }
         
-        // Verifica se já está participando
-        for(ParticipacaoDesafio p : desafio.getParticipacoes()) {
-            if(p.getUsuario().getCpf().equals(cpfUsuario)) {
-                throw new Exception("Usuário já está participando deste desafio.");
-            }
-        }
-
-        ParticipacaoDesafio participacao = new ParticipacaoDesafio(usuario, desafio);
-        desafio.adicionarParticipacao(participacao);
+        // Verifica se já está participando (usando a lógica de Desafio.java)
+        // A lógica em Desafio.java imprime no console, o que é bom para feedback.
+        desafio.adicionarParticipante(usuario);
         
+        // Salva o estado atualizado do desafio (agora com o novo participante)
         repositorioDesafio.atualizar(desafio);
-        System.out.println("Usuário " + usuario.getNome() + " inscrito no desafio " + desafio.getNome());
     }
 
     public void registrarProgresso(int idDesafio, String cpfUsuario, double progresso) throws Exception {

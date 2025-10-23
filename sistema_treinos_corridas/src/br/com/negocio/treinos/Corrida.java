@@ -48,7 +48,8 @@ public class Corrida extends Treino {
 
     @Override
     public String toString() {
-        return String.format("Corrida em %s | Distância: %.2f km | Duração: %d min | Velocidade Média: %.2f km/h",
+        return String.format("%s (Corrida) em %s | Distância: %.2f km | Duração: %d min | Velocidade Média: %.2f km/h",
+            this.nomeTreino, // Adicionado nome do treino
             this.dataExecucao.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
             this.distanciaEmMetros / 1000,
             this.duracaoSegundos / 60,
@@ -64,6 +65,4 @@ public class Corrida extends Treino {
     public void setDistanciaEmMetros(double distanciaEmMetros) {
         this.distanciaEmMetros = distanciaEmMetros;
     }
-
-    
 }

@@ -30,7 +30,7 @@ public class Usuario {
         this.planos = new ArrayList<>();
     }
 
-    // Getters e Setters básicos (omitidos por brevidade, mas devem existir)
+    // Getters e Setters básicos
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public int getIdade() { return idade; }
@@ -44,7 +44,7 @@ public class Usuario {
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
 
-    // --- MÉTODOS DE MANIPULAÇÃO DAS LISTAS (NOVOS) ---
+    // --- MÉTODOS DE MANIPULAÇÃO DAS LISTAS ---
 
     // Métodos para Treinos
     public List<Treino> getTreinos() {
@@ -71,7 +71,7 @@ public class Usuario {
     public void adicionarMeta(Meta meta) {
         if (meta != null) {
             this.metas.add(meta);
-            meta.setUsuario(this); // Garante a associação bidirecional
+            // Linha removida: meta.setUsuario(this); // Garante a associação bidirecional
         }
     }
 
@@ -89,7 +89,7 @@ public class Usuario {
     public void adicionarPlanoTreino(PlanoTreino plano) {
         if (plano != null) {
             this.planos.add(plano);
-            plano.setUsuario(this); // Garante a associação bidirecional
+            // Linha removida: plano.setUsuario(this); // Garante a associação bidirecional
         }
     }
 
@@ -122,7 +122,6 @@ public class Usuario {
     // Método para encontrar um treino específico pelo ID
     public Treino buscarTreinoPorId(int idTreino) {
         for (Treino treino : treinos) {
-            // Assumindo que Treino tem um getIdTreino()
             if (treino.getIdTreino() == idTreino) { 
                 return treino;
             }
