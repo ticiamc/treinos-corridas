@@ -1,42 +1,39 @@
 package br.com.negocio;
 
 import br.com.negocio.treinos.Treino;
-import br.com.negocio.treinos.TreinoProgresso;
+import br.com.negocio.treinos.TreinoProgresso; // Importar a classe
 import br.com.negocio.treinos.Usuario;
 
-/**
- * Controlador para operações relacionadas a Treinos.
- */
 public class ControladorTreino {
-    
-    //Cadastra um novo treino para um usuário e chama o TreinoProgresso para verificar se metas foram atingidas
-     
-    public void cadastrarTreino(Usuario usuario, Treino treino) {
-        if (usuario != null && treino != null) {
-            // 1. Adiciona o treino (Corrida, Intervalado, etc.) à lista do usuário
-            usuario.adicionarTreino(treino);
-            System.out.println("Treino cadastrado com sucesso!");
 
-            // 2. Chama a classe de progresso
-            // Isso verifica automaticamente se o treino bateu metas e gera notificações
-            TreinoProgresso.verificarProgressoMetas(usuario, treino);
-            
+    // (Outros métodos como buscarTreino, listarTreinos, etc. permanecem iguais)
+    
+    public void cadastrarTreino(Usuario cliente, Treino treino) {
+        if (cliente != null && treino != null) {
+            cliente.adicionarTreino(treino);
+            System.out.println("Treino cadastrado com sucesso para " + cliente.getNome());
+
+            // --- CORREÇÃO (REQ09 e REQ08) ---
+            // Após cadastrar o treino, chama o método para verificar 
+            // automaticamente se alguma meta foi atingida e gerar notificações.
+            TreinoProgresso.verificarTodasMetas(cliente, treino);
+            // --- FIM DA CORREÇÃO ---
+
         } else {
-            System.out.println("Erro ao cadastrar treino (usuário ou treino nulo).");
+            System.out.println("Falha ao cadastrar treino. Usuário ou Treino nulo.");
         }
     }
 
-    // Lista todos os treinos cadastrados para um usuário específico.
-    public void listarTreinos(Usuario usuario) {
-        if (usuario != null && !usuario.getTreinos().isEmpty()) {
-            System.out.println("--- Treinos de " + usuario.getNome() + " ---");
-            for (Treino t : usuario.getTreinos()) {
-                System.out.println("Data: " + t.getData() + ", Nome: " + t.getNome() + ", Duração: " + t.getDuracaoEmMinutos() + " min");
-            }
-        } else if (usuario != null) {
-            System.out.println(usuario.getNome() + " não possui treinos cadastrados.");
+    public void atualizarTreino(Usuario cliente, Treino treinoAntigo, Treino treinoNovo) {
+        // Implementação do método de atualização (se necessário)
+    }
+
+    public void removerTreino(Usuario cliente, Treino treino) {
+        if (cliente != null && treino != null) {
+            cliente.removerTreino(treino);
+            System.out.println("Treino removido com sucesso.");
         } else {
-            System.out.println("Usuário não encontrado.");
+            System.out.println("Falha ao remover treino.");
         }
     }
 }

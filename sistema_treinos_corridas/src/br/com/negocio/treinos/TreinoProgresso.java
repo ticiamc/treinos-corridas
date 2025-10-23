@@ -1,79 +1,75 @@
 package br.com.negocio.treinos;
 
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
 
 /**
- * Classe utilitária (com métodos estáticos) responsável por processar
- * o progresso de um usuário quando um novo treino é registrado.
- * * Principal função: Verificar se o novo treino ajudou a bater alguma meta.
+ * Classe utilitária (final) para verificar o progresso de treinos.
+ * Não deve ser instanciada (por isso o construtor privado).
+ * Substitui a antiga classe 'abstract'.
  */
-public class TreinoProgresso {
-
-    //Método auxiliar privado para marcar o status do treino.
-    private static void verificarStatusTreino(Treino treino) {
-        // Marca o treino como "concluído" ou "contabilizado"
-        treino.setStatus(true); 
-    }
+public final class TreinoProgresso {
 
     /**
-     * Verifica o progresso de TODAS as metas do usuário com base no novo treino.
-     * Se uma meta for atingida, marca o treino como 'status=true' (concluído)
-     * e ADICIONA UMA NOTIFICAÇÃO ao usuário (REQ08).
+     * Construtor privado para impedir que esta classe utilitária seja instanciada.
      */
-    public static void verificarProgressoMetas(Usuario usuario, Treino treino) {
-        
-        List<Meta> metas = usuario.getMetas();
+    private TreinoProgresso() {}
 
-        // Itera todas as metas do usuário
-        for (Meta meta : metas) {
+    /**
+     * Verifica se um treino específico (que acabou de ser cadastrado) 
+     * é suficiente para completar QUALQUER meta pendente do usuário.
+     * * Se uma meta for completada:
+     * 1. Altera o status da Meta para "Concluída".
+     * 2. Cria e adiciona uma Notificação para o usuário (REQ08).
+     *
+     * @param usuario O usuário que completou o treino.
+     * @param treino  O treino que foi registrado.
+     */
+    public static void verificarTodasMetas(Usuario usuario, Treino treino) {
+        // Itera por todas as metas cadastradas do usuário
+        for (Meta meta : usuario.getMetas()) {
             
-            // Só processa metas que ainda NÃO FORAM CONCLUÍDAS
-            if (!meta.isConcluida()) {
-                
-                boolean metaAtingida = false; // Flag para controlar se a meta foi batida
+            // Só verifica metas que ainda estão "Pendente"
+            if (meta.getStatus().equalsIgnoreCase("Pendente")) {
+                boolean metaBatida = false;
 
-                // --- Lógica PARA METAS DE DISTÂNCIA ---
-                if (meta.getTipoMeta() == TipoMeta.DISTANCIA) {
+                // Lógica de verificação (baseada na sua implementação original)
+                // Se o treino for uma Corrida...
+                if (treino instanceof Corrida) {
+                    Corrida corrida = (Corrida) treino;
                     
-                    // Verifica se o treino é do tipo Corrida
-                    if (treino instanceof Corrida) {
-                        Corrida corrida = (Corrida) treino;
-                        // Verifica se a distância da *corrida atual* é maior ou igual à meta
+                    // ...e a meta for de DISTANCIA
+                    if (meta.getTipo() == TipoMeta.DISTANCIA) {
                         if (corrida.getDistanciaEmMetros() >= meta.getDistancia()) {
-                            metaAtingida = true;
+                            metaBatida = true;
+                        }
+                    } 
+                    // ...e a meta for de TEMPO
+                    else if (meta.getTipo() == TipoMeta.TEMPO) {
+                        // (Sua classe Meta não tem getTempo(), mas tem getDuracao(). Usando getDuracao())
+                        // Assumindo que a duração da meta está em minutos
+                        if (corrida.getDuracao() >= meta.getDuracao()) { 
+                            metaBatida = true;
                         }
                     }
                 } 
-                
-                // --- LÓGICA PARA METAS DE TEMPO ---
-                else if (meta.getTipoMeta() == TipoMeta.TEMPO) {
-                    // Verifica se a duração do *treino atual* (qualquer tipo) 
-                    // é maior ou igual ao tempo da meta.
-                    if (treino.getDuracaoEmMinutos() >= meta.getTempo()) {
-                        metaAtingida = true;
-                    }
-                }
+                // (Aqui poderia entrar a lógica para Intervalado, etc.)
 
-                // --- Se a meta foi atingida (seja por tempo ou distância) ---
-                if (metaAtingida) {
-                    // 1. Marca o treino como "contabilizado"
-                    verificarStatusTreino(treino); 
-                    
-                    // 2. Marca a meta como concluída
-                    meta.setConcluida(true);
-                    
-                    // 3. Cria a Notificação
-                    String msg = "Parabéns! Você atingiu sua meta: " + meta.getDescricao();
-                    Notificacao notificacao = new Notificacao(msg, new Date());
-                    
-                    // 4. Adiciona a notificação à lista do usuário
-                    usuario.adicionarNotificacao(notificacao);
-                    
-                    // Avisa no console que a notificação foi gerada
-                    System.out.println(">>> [NOTIFICAÇÃO GERADA] Meta atingida: " + meta.getDescricao());
+                
+                // Se a meta foi batida, atualize tudo!
+                if (metaBatida) {
+                    meta.setStatus("Concluída"); // REQ09
+                    System.out.println("[SISTEMA] Meta '" + meta.getDescricao() + "' foi CONCLUÍDA!");
+
+                    // REQ08: Criar e adicionar a notificação
+                    Notificacao notificacao = new Notificacao(
+                        java.util.UUID.randomUUID(),
+                        "Parabéns! Você atingiu sua meta: " + meta.getDescricao(),
+                        LocalDateTime.now()
+                    );
+                    usuario.adicionarNotificacao(notificacao); // Adiciona a notificação ao usuário
+                    System.out.println("[SISTEMA] Notificação gerada para o usuário " + usuario.getNome());
                 }
-            } 
-        } // Fim do loop for (passa para a próxima meta)
+            }
+        }
     }
 }

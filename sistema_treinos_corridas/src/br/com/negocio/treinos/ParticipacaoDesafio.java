@@ -1,37 +1,51 @@
-package br.com.negocio.treinos;
+]package br.com.negocio.treinos;
 
 /**
- * Essa classe é como uma "ficha de inscrição" num desafio.
- * Ela existe pra conectar duas informações: QUEM (o usuário) e ONDE (o desafio).
- * Além disso, ela guarda o progresso daquela pessoa naquele desafio específico.
+ * Classe de associação que representa a inscrição (participação) 
+ * de um Usuário em um Desafio.
  */
 public class ParticipacaoDesafio {
-    
+
+    // --- Atributos ---
     private Usuario usuario;
     private Desafio desafio;
-    private double progresso; // Ex: quantos km o usuário já correu para este desafio.
+    
+    //Usado para armazenar o "score" do usuário
+    //no momento em que o ranking é gerado.
+    private double pontuacao; 
 
+    // --- Construtor ---
     public ParticipacaoDesafio(Usuario usuario, Desafio desafio) {
         this.usuario = usuario;
         this.desafio = desafio;
-        this.progresso = 0; // Todo mundo começa com zero de progresso.
+        this.pontuacao = 0; // Inicia com 0
     }
 
     // --- Getters e Setters ---
-
+    
     public Usuario getUsuario() {
         return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public Desafio getDesafio() {
         return desafio;
     }
 
-    public double getProgresso() {
-        return progresso;
+    public void setDesafio(Desafio desafio) {
+        this.desafio = desafio;
+    }
+    
+    // Obtém a pontuação calculada do usuário para este desafio
+    public double getPontuacao() {
+        return pontuacao;
     }
 
-    public void setProgresso(double progresso) {
-        this.progresso = progresso;
+    //Define a pontuação calculada do usuário.
+    public void setPontuacao(double pontuacao) {
+        this.pontuacao = pontuacao;
     }
 }
