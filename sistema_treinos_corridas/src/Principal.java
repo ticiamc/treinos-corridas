@@ -19,7 +19,7 @@ public class Principal {
         RepositorioClientes repositorio = new RepositorioClientes();
         int option = 0;
         
-        while (option != 9) {
+        while (option != 22) {
             System.out.println("\n==========================");
             System.out.println("    Sistema de Treinos    ");
             System.out.println("==========================");
@@ -191,7 +191,7 @@ public class Principal {
 
                     ControladorTreino.deletarTreino(username5, nomeTreino2, repositorio);
                     break;
-                case 9:
+                case 22:
                     // Sair do Sistema
                     scan.close();
                     break;
