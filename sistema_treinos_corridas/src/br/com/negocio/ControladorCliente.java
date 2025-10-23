@@ -26,8 +26,8 @@ public class ControladorCliente {
      * Cadastra um novo cliente, se o CPF não existir.
      */
     public void cadastrarCliente(Usuario cliente) {
-        if (repositorioCliente.buscarCliente(cliente.getCpf()) == null) {
-            repositorioCliente.adicionarCliente(cliente);
+        if (repositorioCliente.buscarElementoPorCpf(cliente.getCpf()) == null) {
+            repositorioCliente.adicionarElemento(cliente);
             System.out.println("Cliente cadastrado com sucesso!");
         } else {
             System.out.println("CPF já cadastrado.");
@@ -36,13 +36,13 @@ public class ControladorCliente {
 
     //Busca um cliente pelo CPF.
     public Usuario buscarCliente(String cpf) {
-        return repositorioCliente.buscarCliente(cpf);
+        return repositorioCliente.buscarElementoPorCpf(cpf);
     }
 
     // Remove um cliente pelo CPF.
     public void removerCliente(String cpf) {
-        if (repositorioCliente.buscarCliente(cpf) != null) {
-            repositorioCliente.removerCliente(cpf);
+        if (repositorioCliente.buscarElementoPorCpf(cpf) != null) {
+            repositorioCliente.removerElemento(cpf);
             System.out.println("Cliente removido com sucesso!");
         } else {
             System.out.println("Cliente não encontrado.");
@@ -51,8 +51,8 @@ public class ControladorCliente {
 
     // Atualiza os dados de um cliente existente.
     public void atualizarCliente(Usuario cliente) {
-        if (repositorioCliente.buscarCliente(cliente.getCpf()) != null) {
-            repositorioCliente.atualizarCliente(cliente);
+        if (repositorioCliente.buscarElementoPorCpf(cliente.getCpf()) != null) {
+            repositorioCliente.atualizarElemento(cliente);
             System.out.println("Cliente atualizado com sucesso!");
         } else {
             System.out.println("Cliente não encontrado.");
@@ -63,7 +63,7 @@ public class ControladorCliente {
 
     /**
      * Exibe as notificações NÃO LIDAS de um usuário e, em seguida,
-     * limpa as notificações que foram lidas (REQ08, REQ20, REQ21).
+     * limpa as notificações que foram lidas.
      */
     public void verNotificacoes(Usuario usuario) {
         if (usuario == null) {
@@ -79,7 +79,7 @@ public class ControladorCliente {
         for (Notificacao n : notificacoes) {
             // Mostra apenas notificações que ainda não foram lidas
             if (!n.isLida()) {
-                System.out.println(n.getData() + " - " + n.getMensagem());
+                System.out.println(n); 
                 n.setLida(true); // Marca a notificação como lida
                 notificacoesNovas++;
             }

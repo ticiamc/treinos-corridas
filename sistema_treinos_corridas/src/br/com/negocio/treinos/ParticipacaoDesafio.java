@@ -1,4 +1,4 @@
-]package br.com.negocio.treinos;
+package br.com.negocio.treinos;
 
 /**
  * Classe de associação que representa a inscrição (participação) 
@@ -10,15 +10,14 @@ public class ParticipacaoDesafio {
     private Usuario usuario;
     private Desafio desafio;
     
-    //Usado para armazenar o "score" do usuário
-    //no momento em que o ranking é gerado.
-    private double pontuacao; 
+    // Usado para armazenar o "score" do usuário
+    private double progresso; 
 
     // --- Construtor ---
     public ParticipacaoDesafio(Usuario usuario, Desafio desafio) {
         this.usuario = usuario;
         this.desafio = desafio;
-        this.pontuacao = 0; // Inicia com 0
+        this.progresso = 0; // Inicia com 0
     }
 
     // --- Getters e Setters ---
@@ -39,13 +38,12 @@ public class ParticipacaoDesafio {
         this.desafio = desafio;
     }
     
-    // Obtém a pontuação calculada do usuário para este desafio
-    public double getPontuacao() {
-        return pontuacao;
+    public double getProgresso() {
+        return progresso;
     }
 
-    //Define a pontuação calculada do usuário.
-    public void setPontuacao(double pontuacao) {
-        this.pontuacao = pontuacao;
+   
+    public void setProgresso(double progresso) {
+        this.progresso = progresso;
     }
 }

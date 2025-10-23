@@ -3,7 +3,7 @@ package br.com.negocio.treinos;
 import java.time.LocalDateTime;
 
 /**
- * Classe utilitária (final) para verificar o progresso de treinos.
+ * Classe utilitária para verificar o progresso de treinos.
  * Não deve ser instanciada (por isso o construtor privado).
  * Substitui a antiga classe 'abstract'.
  */
@@ -19,7 +19,7 @@ public final class TreinoProgresso {
      * é suficiente para completar QUALQUER meta pendente do usuário.
      * * Se uma meta for completada:
      * 1. Altera o status da Meta para "Concluída".
-     * 2. Cria e adiciona uma Notificação para o usuário (REQ08).
+     * 2. Cria e adiciona uma Notificação para o usuário.
      *
      * @param usuario O usuário que completou o treino.
      * @param treino  O treino que foi registrado.
@@ -32,35 +32,49 @@ public final class TreinoProgresso {
             if (meta.getStatus().equalsIgnoreCase("Pendente")) {
                 boolean metaBatida = false;
 
-                // Lógica de verificação (baseada na sua implementação original)
+                // Lógica de verificação
+                
                 // Se o treino for uma Corrida...
                 if (treino instanceof Corrida) {
                     Corrida corrida = (Corrida) treino;
                     
                     // ...e a meta for de DISTANCIA
                     if (meta.getTipo() == TipoMeta.DISTANCIA) {
+                        // (meta.getDistancia() retorna o valorAlvo em metros)
                         if (corrida.getDistanciaEmMetros() >= meta.getDistancia()) {
                             metaBatida = true;
                         }
                     } 
                     // ...e a meta for de TEMPO
                     else if (meta.getTipo() == TipoMeta.TEMPO) {
-                        // (Sua classe Meta não tem getTempo(), mas tem getDuracao(). Usando getDuracao())
-                        // Assumindo que a duração da meta está em minutos
-                        if (corrida.getDuracao() >= meta.getDuracao()) { 
+                        // (meta.getTempo() retorna o valorAlvo em minutos)
+                        double duracaoTreinoMinutos = corrida.getDuracaoSegundos() / 60.0;
+                        if (duracaoTreinoMinutos >= meta.getTempo()) { 
                             metaBatida = true;
                         }
                     }
                 } 
-                // (Aqui poderia entrar a lógica para Intervalado, etc.)
+                // Se o treino for Intervalado...
+                else if (treino instanceof Intervalado) {
+                    Intervalado intervalado = (Intervalado) treino;
+                    
+                    // Treinos intervalados só podem abater metas de TEMPO.
+                    if (meta.getTipo() == TipoMeta.TEMPO) {
+                        double duracaoTreinoMinutos = intervalado.getDuracaoSegundos() / 60.0;
+                        if (duracaoTreinoMinutos >= meta.getTempo()) { 
+                            metaBatida = true;
+                        }
+                    }
+                }
 
                 
                 // Se a meta foi batida, atualize tudo!
                 if (metaBatida) {
-                    meta.setStatus("Concluída"); // REQ09
+                    meta.setStatus("Concluída"); 
                     System.out.println("[SISTEMA] Meta '" + meta.getDescricao() + "' foi CONCLUÍDA!");
 
-                    // REQ08: Criar e adicionar a notificação
+                    //Criar e adicionar a notificação
+                    
                     Notificacao notificacao = new Notificacao(
                         java.util.UUID.randomUUID(),
                         "Parabéns! Você atingiu sua meta: " + meta.getDescricao(),

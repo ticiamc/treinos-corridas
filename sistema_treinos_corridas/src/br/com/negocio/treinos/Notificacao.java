@@ -1,21 +1,25 @@
 package br.com.negocio.treinos;
 
-import java.util.Date;
+import java.time.LocalDateTime; 
+import java.time.format.DateTimeFormatter; 
+import java.util.UUID; 
 
 /**
  * Representa uma mensagem de notificação para o usuário.
- * Usada para informar sobre metas atingidas, desafios, etc.
+ * 
  */
 public class Notificacao {
 
-    // --- Atributos ---
+    // --- Atributos  ---
+    private UUID id;
     private String mensagem;
-    private Date data; 
+    private LocalDateTime data; // 
     private boolean lida; 
 
-    // --- Construtor ---
+    // --- Construtor  ---
     
-    public Notificacao(String mensagem, Date data) {
+    public Notificacao(UUID id, String mensagem, LocalDateTime data) {
+        this.id = id;
         this.mensagem = mensagem;
         this.data = data;
         this.lida = false; // Toda notificação começa como "não lida"
@@ -23,6 +27,10 @@ public class Notificacao {
 
     // --- Getters e Setters ---
 
+    public UUID getId() {
+        return id;
+    }
+    
     public String getMensagem() {
         return mensagem;
     }
@@ -31,11 +39,11 @@ public class Notificacao {
         this.mensagem = mensagem;
     }
 
-    public Date getData() {
+    public LocalDateTime getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(LocalDateTime data) { 
         this.data = data;
     }
 
@@ -45,5 +53,11 @@ public class Notificacao {
 
     public void setLida(boolean lida) {
         this.lida = lida;
+    }
+    
+    @Override
+    public String toString() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm");
+        return String.format("[%s] %s", this.data.format(formatter), this.mensagem);
     }
 }

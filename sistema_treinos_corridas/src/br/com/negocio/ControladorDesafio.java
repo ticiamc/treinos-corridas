@@ -5,7 +5,7 @@ import br.com.dados.IRepositorioDesafio;
 import br.com.negocio.treinos.Desafio;
 import br.com.negocio.treinos.ParticipacaoDesafio;
 import br.com.negocio.treinos.Usuario;
-import java.time.LocalDate; // Corrigido: import java.util.Date;
+import java.time.LocalDate; 
 import java.util.List;
 
 public class ControladorDesafio {
@@ -29,7 +29,7 @@ public class ControladorDesafio {
     }
 
     public void participarDesafio(int idDesafio, String cpfUsuario) throws Exception {
-        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario); // Corrigido: buscar
+        Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario);
         if (usuario == null) {
             throw new Exception("Usuário não encontrado.");
         }
@@ -39,11 +39,7 @@ public class ControladorDesafio {
             throw new Exception("Desafio não encontrado.");
         }
         
-        // Verifica se já está participando (usando a lógica de Desafio.java)
-        // A lógica em Desafio.java imprime no console, o que é bom para feedback.
         desafio.adicionarParticipante(usuario);
-        
-        // Salva o estado atualizado do desafio (agora com o novo participante)
         repositorioDesafio.atualizar(desafio);
     }
 
@@ -65,7 +61,7 @@ public class ControladorDesafio {
             throw new Exception("Usuário não está participando deste desafio.");
         }
 
-        participacao.setProgresso(participacao.getProgresso() + progresso); // Acumula o progresso
+        participacao.setProgresso(participacao.getProgresso() + progresso);
         repositorioDesafio.atualizar(desafio);
         System.out.println("Progresso registrado com sucesso! Novo progresso: " + participacao.getProgresso());
     }
@@ -76,5 +72,20 @@ public class ControladorDesafio {
             throw new Exception("Desafio não encontrado.");
         }
         return desafio;
+    }
+    
+    /**
+     * Remove um desafio do sistema.
+     * @param idDesafio O ID (int) do desafio a ser removido.
+     */
+    public void removerDesafio(int idDesafio) {
+        Desafio desafio = repositorioDesafio.buscar(idDesafio);
+        
+        if (desafio != null) {
+            repositorioDesafio.remover(idDesafio);
+            System.out.println("Desafio '" + desafio.getNome() + "' removido com sucesso!");
+        } else {
+            System.out.println("Desafio com ID " + idDesafio + " não encontrado.");
+        }
     }
 }

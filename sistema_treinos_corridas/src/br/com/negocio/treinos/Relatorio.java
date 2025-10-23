@@ -11,9 +11,7 @@ public class Relatorio {
         // Classe utilitária, não deve ser instanciada
     }
 
-    /**
-     * (REQ16) Gera um relatório simples de todas as atividades de um cliente.
-     */
+    // Gera um relatório simples de todas as atividades de um cliente.
     public static void gerarRelatorioAtividades(Usuario cliente) {
         System.out.println("--- Relatório de Atividades para: " + cliente.getNome() + " ---");
         if (cliente.getTreinos().isEmpty()) {
@@ -26,9 +24,7 @@ public class Relatorio {
         System.out.println("--- Fim do Relatório ---");
     }
 
-    /**
-     * (REQ17) Gera um relatório de evolução (ex: total de km).
-     */
+    // Gera um relatório de evolução (ex: total de km).
     public static void gerarRelatorioEvolucao(Usuario cliente) {
         System.out.println("--- Relatório de Evolução para: " + cliente.getNome() + " ---");
         double distanciaTotal = 0;
@@ -46,10 +42,8 @@ public class Relatorio {
     }
 
     /**
-     * (REQ15) Gera o ranking de um desafio.
-     * --- CORRIGIDO ---
-     * Esta versão agora CALCULA o progresso somando as corridas do usuário
-     * que estão dentro do período de datas do desafio.
+     * Gera o ranking de um desafio.
+     * CALCULA o progresso somando as corridas do usuário que estão dentro do período de datas do desafio.
      */
     public static void gerarRankingDesafio(Desafio desafio) {
         System.out.println("--- Ranking do Desafio: " + desafio.getDescricao() + " ---");
@@ -62,17 +56,18 @@ public class Relatorio {
 
         // 1. Calcular o progresso real de cada participante
         for (ParticipacaoDesafio p : participacoes) {
-            Usuario u = p.getCliente();
+            Usuario u = p.getUsuario(); 
             // Calcula o progresso real e o armazena no objeto ParticipacaoDesafio
             double progressoCalculado = calcularProgressoDesafio(u, desafio);
-            p.setProgresso(progressoCalculado); // Atualiza o progresso
+            p.setProgresso(progressoCalculado); 
         }
 
-        // 2. Ordenar a lista (a sua lógica de ordenação original agora funciona)
+        // 2. Ordenar a lista
         Collections.sort(participacoes, new Comparator<ParticipacaoDesafio>() {
             @Override
             public int compare(ParticipacaoDesafio p1, ParticipacaoDesafio p2) {
                 // Compara em ordem decrescente (do maior progresso para o menor)
+                // Esta chamada agora está correta (getProgresso)
                 return Double.compare(p2.getProgresso(), p1.getProgresso());
             }
         });
@@ -82,7 +77,7 @@ public class Relatorio {
         for (ParticipacaoDesafio p : participacoes) {
             System.out.printf("%dº Lugar: %s - Progresso: %.2f km\n",
                     pos,
-                    p.getCliente().getNome(),
+                    p.getUsuario().getNome(),
                     (p.getProgresso() / 1000) // Converte de metros para km
             );
             pos++;
@@ -105,7 +100,8 @@ public class Relatorio {
             // Verifica se o treino é uma Corrida
             if (treino instanceof Corrida) {
                 Corrida corrida = (Corrida) treino;
-                LocalDate dataCorrida = corrida.getData();
+                
+                LocalDate dataCorrida = corrida.getDataExecucao().toLocalDate();
 
                 // Verifica se a data da corrida está dentro do período do desafio
                 // (assume-se que as datas são inclusivas)

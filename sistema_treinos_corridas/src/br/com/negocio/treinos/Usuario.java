@@ -21,7 +21,6 @@ public class Usuario {
     private List<Treino> treinos; // Lista de treinos executados
     private List<Meta> metas; // Lista de metas pessoais
     private List<PlanoTreino> planos; // Lista de planos de treino (agendados)
-    private List<Desafio> desafios; // Lista de desafios que participa
     private List<Notificacao> notificacoes; // Lista de notificações (alertas)
 
     // --- Construtor ---
@@ -37,7 +36,6 @@ public class Usuario {
         this.treinos = new ArrayList<>();
         this.metas = new ArrayList<>();
         this.planos = new ArrayList<>();
-        this.desafios = new ArrayList<>();
         this.notificacoes = new ArrayList<>();
     }
 
@@ -110,6 +108,20 @@ public class Usuario {
     public void adicionarTreino(Treino treino) {
         this.treinos.add(treino);
     }
+    
+
+    public void removerTreino(Treino treino) {
+        this.treinos.remove(treino);
+    }
+    
+    public Treino buscarTreinoPorId(int idTreino) {
+        for (Treino t : treinos) {
+            if (t.getIdTreino() == idTreino) {
+                return t;
+            }
+        }
+        return null;
+    }
 
     public List<Meta> getMetas() {
         return metas;
@@ -119,19 +131,39 @@ public class Usuario {
         this.metas.add(meta);
     }
 
+    public void removerMeta(Meta meta) {
+        this.metas.remove(meta);
+    }
+
+    public Meta buscarMetaPorId(int idMeta) {
+        for (Meta m : metas) {
+            if (m.getIdMeta() == idMeta) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     public List<PlanoTreino> getPlanos() {
         return planos;
     }
 
-    public void adicionarPlano(PlanoTreino plano) {
+    
+    public void adicionarPlanoTreino(PlanoTreino plano) {
         this.planos.add(plano);
     }
 
-    public List<Desafio> getDesafios() {
-        return desafios;
+    public void removerPlanoTreino(PlanoTreino plano) {
+        this.planos.remove(plano);
     }
 
-    public void adicionarDesafio(Desafio desafio) {
-        this.desafios.add(desafio);
+    public PlanoTreino buscarPlanoPorId(int idPlano) {
+        for (PlanoTreino p : planos) {
+            if (p.getIdPlano() == idPlano) {
+                return p;
+            }
+        }
+        return null;
     }
+
 }
