@@ -1,79 +1,92 @@
 package br.com.negocio;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
-
-import br.com.dados.RepositorioClientes;
+import br.com.dados.IRepositorioCliente;
 import br.com.negocio.treinos.Corrida;
 import br.com.negocio.treinos.Intervalado;
 import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.Usuario;
+import java.util.Date;
+import java.util.List;
 
-public abstract class ControladorTreino {
-    public static void adicionarTreino(String username, Treino treino, RepositorioClientes repositorio){
-        Usuario user = repositorio.buscarElemento(username);
-        if (user != null){
-            user.adicionarTreino(treino);
-        }
-        else{
-            System.out.println("\nUsuário não encontrado!\n");
-        }
+public class ControladorTreino {
+
+    private IRepositorioCliente repositorioCliente;
+    private int proximoTreinoId = 1; // Simula a geração de ID para treinos
+
+    public ControladorTreino(IRepositorioCliente repositorioCliente) {
+        this.repositorioCliente = repositorioCliente;
     }
 
-    public static void atualizarTreino(String username, String treino, String novo_nome, String data, int duracao, RepositorioClientes repositorio){
-        Scanner scan = new Scanner(System.in);
-        Usuario user = repositorio.buscarElemento(username);
-        if (user != null){
-            for (Treino t: user.getTreinos()){
-                if (t.getNomeTreino().equalsIgnoreCase(treino)){
-                    t.setNomeTreino(novo_nome);
-                    DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-                    LocalDateTime dataHora = LocalDateTime.parse(data, formato);
-                    t.setDataExecucao(dataHora);
-                    t.setDuracaoSegundos(duracao);
+    // Método de cadastro (existente)
+    public void cadastrarTreino(String cpfCliente, Date data, double duracao, String tipo, Double distancia, Integer series, Double tempoDescanso) throws Exception {
+        Usuario cliente = repositorioCliente.buscar(cpfCliente);
+        if (cliente == null) {
+            throw new Exception("Cliente não encontrado.");
+        }
 
-                    if (t instanceof Intervalado){
-                        Intervalado new_t = (Intervalado) t;
-                        System.out.print("Digite a quantidade de series: ");
-                        int series = scan.nextInt();
-
-                        System.out.print("Digite o tempo de descanso: ");
-                        int descanso = scan.nextInt();
-
-                        new_t.setSeries(series);
-                        new_t.setDescansoEntreSeriesSeg(descanso);
-                    }
-                    else if (t instanceof Corrida){
-                        Corrida new_t = (Corrida) t;
-
-                        System.out.print("Digite a distância a ser percorrida (m): ");
-                        int distancia = scan.nextInt();
-
-                        new_t.setDistanciaEmMetros(distancia);
-                    }
-                }
+        Treino treino;
+        if ("corrida".equalsIgnoreCase(tipo)) {
+            if (distancia == null) {
+                throw new IllegalArgumentException("Distância é obrigatória para corrida.");
             }
-        }
-        else{
-            System.out.println("\nCliente não encontrado!\n");
+            treino = new Corrida(data, duracao, distancia);
+        } else if ("intervalado".equalsIgnoreCase(tipo)) {
+            if (series == null || tempoDescanso == null) {
+                throw new IllegalArgumentException("Séries e tempo de descanso são obrigatórios para treino intervalado.");
+            }
+            treino = new Intervalado(data, duracao, series, tempoDescanso);
+        } else {
+            throw new IllegalArgumentException("Tipo de treino inválido.");
         }
 
-        scan.close();
+        treino.setIdTreino(proximoTreinoId++); // Atribui um ID único
+        cliente.adicionarTreino(treino);
+        repositorioCliente.atualizar(cliente); // Persiste a mudança no usuário
+    }
+    
+    // Método de listagem (existente)
+    public List<Treino> listarTreinos(String cpfCliente) throws Exception {
+         Usuario cliente = repositorioCliente.buscar(cpfCliente);
+        if (cliente == null) {
+            throw new Exception("Cliente não encontrado.");
+        }
+        return cliente.getTreinos();
     }
 
-    public static void deletarTreino(String nome, String nome_treino, RepositorioClientes repositorio){
-        Usuario user = repositorio.buscarElemento(nome);
+    // --- MÉTODOS NOVOS (ATUALIZAR E REMOVER) ---
 
-        if (user != null){
-            for (Treino t: user.getTreinos()){
-                if (t.getNomeTreino().equalsIgnoreCase(nome_treino)){
-                    user.getTreinos().remove(t);
-                }
-            }
+    public void atualizarTreino(String cpfCliente, int idTreino, Date novaData, double novaDuracao) throws Exception {
+        Usuario cliente = repositorioCliente.buscar(cpfCliente);
+        if (cliente == null) {
+            throw new Exception("Cliente não encontrado.");
         }
-        else{
-            System.out.println("\nTreino não encontrado!\n");
+
+        Treino treino = cliente.buscarTreinoPorId(idTreino);
+        if (treino == null) {
+            throw new Exception("Treino não encontrado para este usuário.");
         }
+
+        treino.setData(novaData);
+        treino.setDuracao(novaDuracao);
+        // Outras atualizações específicas (distância, etc.) poderiam ser adicionadas
+        
+        repositorioCliente.atualizar(cliente); // Salva o estado atualizado do cliente
+        System.out.println("Treino atualizado com sucesso!");
+    }
+
+    public void removerTreino(String cpfCliente, int idTreino) throws Exception {
+        Usuario cliente = repositorioCliente.buscar(cpfCliente);
+        if (cliente == null) {
+            throw new Exception("Cliente não encontrado.");
+        }
+
+        Treino treino = cliente.buscarTreinoPorId(idTreino);
+        if (treino == null) {
+            throw new Exception("Treino não encontrado para este usuário.");
+        }
+
+        cliente.removerTreino(treino);
+        repositorioCliente.atualizar(cliente); // Salva o estado atualizado do cliente
+        System.out.println("Treino removido com sucesso!");
     }
 }
