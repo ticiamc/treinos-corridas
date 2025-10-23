@@ -57,40 +57,40 @@ public class Principal {
         int opcao = -1;
         do {
             System.out.println("\n--- SISTEMA DE TREINOS E CORRIDAS ---");
-            System.out.println("--- Clientes ---");
+            System.out.println("\n--- Clientes ---");
             System.out.println("1. Cadastrar Cliente");
             System.out.println("2. Buscar Cliente (por CPF)");
             System.out.println("3. Listar Clientes");
             System.out.println("4. Atualizar Cliente");
             System.out.println("5. Deletar Cliente");
-            System.out.println("--- Treinos (Cliente) ---");
+            System.out.println("\n--- Treinos (Cliente) ---");
             System.out.println("6. Cadastrar Treino (Corrida/Intervalado)");
             System.out.println("7. Listar Treinos do Cliente");
-            System.out.println("--- Metas (Cliente) ---");
+            System.out.println("\n--- Metas (Cliente) ---");
             System.out.println("8. Cadastrar Meta");
             System.out.println("9. Listar Metas do Cliente");
             System.out.println("10. Atualizar Meta");
             System.out.println("11. Deletar Meta");
-            System.out.println("--- Planos de Treino (Cliente) ---");
+            System.out.println("\n--- Planos de Treino (Cliente) ---");
             System.out.println("12. Cadastrar Plano de Treino");
             System.out.println("13. Listar Planos do Cliente");
             System.out.println("14. Adicionar Treino a um Plano");
             System.out.println("15. Atualizar Plano");
             System.out.println("16. Deletar Plano");
-            System.out.println("--- Desafios ---");
+            System.out.println("\n--- Desafios ---");
             System.out.println("17. Cadastrar Desafio");
             System.out.println("18. Listar Desafios");
             System.out.println("19. Deletar Desafio");
             System.out.println("20. Adicionar Participante a Desafio");
 
-            System.out.println("--- Relatórios e Notificações ---");
+            System.out.println("\n--- Relatórios e Notificações ---");
             System.out.println("21. Ver Ranking de Desafio");
             System.out.println("22. Ver Minhas Notificações");
             System.out.println("23. Gerar Relatório de Atividade");
             System.out.println("24. Gerar Relatório de Evolução");
 
-            System.out.println("0. Sair");
-            System.out.print("Escolha uma opção: ");
+            System.out.println("\n0. Sair");
+            System.out.print("\n\nEscolha uma opção: ");
 
             try {
                 opcao = scanner.nextInt();
