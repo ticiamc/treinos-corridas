@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Principal {
+    /*
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -50,7 +51,6 @@ public class Principal {
             System.out.println("Erro ao carregar dados de teste: " + e.getMessage());
         }
         // --- FIM DOS DADOS DE EXEMPLO ---
-         */
        
         
 
@@ -377,4 +377,5 @@ public class Principal {
 
         scanner.close();
     }
+    */
 }
