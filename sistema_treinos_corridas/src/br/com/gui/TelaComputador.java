@@ -1,5 +1,15 @@
 package br.com.gui;
 
+import br.com.dados.RepositorioClientes;
+import br.com.negocio.ControladorCliente;
+import br.com.negocio.ControladorTreino;
+import br.com.negocio.treinos.Treino;
+import br.com.negocio.treinos.Usuario;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -8,6 +18,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -15,7 +27,26 @@ import javax.swing.SwingUtilities;
 import java.awt.*;
 
 public class TelaComputador {
+
+    // Controladores estáticos para serem acessados por todas as telas
+    public static ControladorCliente controladorCliente;
+    public static ControladorTreino controladorTreino;
+    
+    // CPF fixo para simular o usuário logado (já que não temos tela de login)
+    public static final String CPF_LOGADO = "000.000.000-00"; 
+
     public static void main(String[] args) {
+        
+        // 1. Inicializa os Repositórios e Controladores
+        RepositorioClientes repo = new RepositorioClientes();
+        controladorCliente = new ControladorCliente(repo);
+        controladorTreino = new ControladorTreino(repo);
+
+        // 2. Cria um usuário de teste para não dar erro de "usuário não encontrado"
+        Usuario userTeste = new Usuario("Usuário Teste", 25, 70, 1.75, "teste@email.com", CPF_LOGADO);
+        controladorCliente.cadastrarCliente(userTeste);
+        System.out.println("Sistema iniciado com usuário de teste: " + userTeste.getNome());
+
         SwingUtilities.invokeLater(() -> criarUI());
     }
 
@@ -129,6 +160,31 @@ public class TelaComputador {
         // -------------------------------
         JPanel topo = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 10));
         JButton btnVerTreinos = new JButton("Ver Treinos");
+        
+        btnVerTreinos.addActionListener(e -> {
+            Usuario u = controladorCliente.buscarCliente(CPF_LOGADO);
+            if (u != null) {
+                List<Treino> treinos = u.getTreinos();
+                StringBuilder sb = new StringBuilder();
+                sb.append("TREINOS DE ").append(u.getNome().toUpperCase()).append(":\n\n");
+                
+                if (treinos.isEmpty()) {
+                    sb.append("Nenhum treino cadastrado ainda.");
+                } else {
+                    for (Treino t : treinos) {
+                        sb.append(t.toString()).append("\n-------------------\n");
+                    }
+                }
+                // Mostra num pop-up simples
+                JTextArea textArea = new JTextArea(sb.toString());
+                JScrollPane scrollPane = new JScrollPane(textArea);
+                textArea.setLineWrap(true);
+                textArea.setWrapStyleWord(true);
+                scrollPane.setPreferredSize(new Dimension(400, 300));
+                JOptionPane.showMessageDialog(tela, scrollPane, "Histórico", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+        
         topo.add(btnVerTreinos);
         tela.add(topo, BorderLayout.NORTH);
 
@@ -379,6 +435,44 @@ public class TelaComputador {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+            }
+
+            try {
+                // 1. Preparar os dados
+                String nomeTreino = campoNome.getText();
+                LocalDate dataTreino = LocalDate.parse(campoData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                int duracaoSegundos = Integer.parseInt(campoDuracao.getText()) * 60; // Converte minutos p/ segundos
+                
+                double distancia = 0;
+                int series = 0;
+                int descanso = 0;
+                String tipoStr = "";
+
+                // 2. Pegar dados específicos (Corrida ou Intervalado)
+                if (tipoTreino[0].equals("corrida")) {
+                    tipoStr = "Corrida";
+                    distancia = Double.parseDouble(campoDistancia[0].getText());
+                } else {
+                    tipoStr = "Intervalado";
+                    series = Integer.parseInt(campoSeries[0].getText());
+                    descanso = Integer.parseInt(campoDescanso[0].getText());
+                }
+
+                // 3. Chamar o Controlador para salvar
+                controladorTreino.cadastrarTreino(
+                    CPF_LOGADO,    // CPF do usuário fixo
+                    tipoStr,       // "Corrida" ou "Intervalado"
+                    dataTreino, 
+                    duracaoSegundos, 
+                    nomeTreino, 
+                    distancia, 
+                    series, 
+                    descanso
+                );
+                
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(tela, "Erro ao salvar no sistema: " + ex.getMessage());
+                return; // Para aqui se der erro
             }
 
             // -------------------------------
