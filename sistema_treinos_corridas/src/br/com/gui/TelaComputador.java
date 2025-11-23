@@ -307,4 +307,12 @@ public class TelaComputador {
         campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         return campo;
     }
+
+    public static void TelaMetas(){
+
+    }
+
+    public static void TelaDesafios(){
+        
+    }
 }
