@@ -14,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException; // Importante para tratar erro de data
 import java.util.List;
 
 public class TelaComputador {
@@ -22,7 +23,7 @@ public class TelaComputador {
     public static ControladorCliente controladorCliente;
     public static ControladorTreino controladorTreino;
     
-    // CPF fixo para teste. Em um sistema real, isso viria de uma tela de Login.
+    // CPF fixo caso queira usar como fallback (mas o campo visual terá prioridade)
     public static final String CPF_LOGADO = "000.000.000-00"; 
 
     // --- PALETA DE CORES (MODERNA / FITNESS) ---
@@ -94,12 +95,12 @@ public class TelaComputador {
         // Coluna 1
         gbc.gridx = 1; 
         
-        // [ATUALIZAÇÃO] Botão Cadastrar agora chama a tela de cadastro
+        // Botão Cadastrar
         JButton btnCadastrar = criarBotaoEstilizado("Cadastrar");
         btnCadastrar.addActionListener(e -> abrirTelaCadastroUsuario());
         janela.add(btnCadastrar, configuracaoGrid(1, 0));
 
-        // [ATUALIZAÇÃO] Botão Notificações agora chama a tela de notificações
+        // Botão Notificações
         JButton btnNotificacoes = criarBotaoEstilizado("Notificações");
         btnNotificacoes.addActionListener(e -> abrirTelaNotificacoes());
         janela.add(btnNotificacoes, configuracaoGrid(1, 1));
@@ -132,7 +133,7 @@ public class TelaComputador {
     }
 
     // ========================================================================
-    // TELA 1: CADASTRO DE USUÁRIO (NOVO)
+    // TELA 1: CADASTRO DE USUÁRIO
     // ========================================================================
     public static void abrirTelaCadastroUsuario() {
         JFrame tela = new JFrame("Cadastrar Novo Atleta");
@@ -200,10 +201,9 @@ public class TelaComputador {
     }
 
     // ========================================================================
-    // TELA 2: NOTIFICAÇÕES (NOVO)
+    // TELA 2: NOTIFICAÇÕES
     // ========================================================================
     public static void abrirTelaNotificacoes() {
-        // Tenta achar o usuário padrão, senão pede CPF
         Usuario u = controladorCliente.buscarCliente(CPF_LOGADO);
         if (u == null) {
             String cpfDigitado = JOptionPane.showInputDialog(null, "Usuário padrão não encontrado. Digite seu CPF:");
@@ -244,7 +244,6 @@ public class TelaComputador {
         scroll.setBorder(BorderFactory.createLineBorder(COR_PAINEL_LATERAL));
         tela.add(scroll, BorderLayout.CENTER);
 
-        // Botão para limpar/marcar como lidas
         JButton btnLimpar = criarBotaoEstilizado("Marcar todas como Lidas / Limpar");
         Usuario usuarioFinal = u; 
         
@@ -252,7 +251,6 @@ public class TelaComputador {
             for(Notificacao n : usuarioFinal.getNotificacoes()){
                 n.setLida(true);
             }
-            // Remove as lidas da lista (opcional, para limpar a tela)
             usuarioFinal.getNotificacoes().removeIf(Notificacao::isLida);
             
             JOptionPane.showMessageDialog(tela, "Notificações limpas!");
@@ -267,7 +265,7 @@ public class TelaComputador {
     }
 
     // ========================================================================
-    // TELA 3: CADASTRO DE TREINO (ATUALIZADO)
+    // TELA 3: CADASTRO DE TREINO (COM CAMPO CPF ATUALIZADO)
     // ========================================================================
     public static void abrirTelaCadastroTreino() {
         JFrame tela = new JFrame("Gerenciar Treinos");
@@ -278,26 +276,23 @@ public class TelaComputador {
         JPanel topo = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         topo.setBackground(COR_FUNDO);
         
-        JButton btnVerTreinos = criarBotaoEstilizado("Ver Histórico");
+        JButton btnVerTreinos = criarBotaoEstilizado("Ver Histórico de Aluno");
         btnVerTreinos.addActionListener(e -> {
-            // Tenta pegar usuário logado ou pede CPF
-            Usuario u = controladorCliente.buscarCliente(CPF_LOGADO);
-            if(u == null) {
-                String cpfInput = JOptionPane.showInputDialog(tela, "Digite o CPF para ver histórico:");
-                if(cpfInput != null) u = controladorCliente.buscarCliente(cpfInput);
-            }
-            
-            if (u != null) {
-                List<Treino> treinos = u.getTreinos();
-                StringBuilder sb = new StringBuilder();
-                if (treinos.isEmpty()) sb.append("Nenhum treino registrado.");
-                else for (Treino t : treinos) sb.append(t.toString()).append("\n-------------------\n");
-                
-                JTextArea area = new JTextArea(sb.toString());
-                area.setFont(new Font("Consolas", Font.PLAIN, 14));
-                JOptionPane.showMessageDialog(tela, new JScrollPane(area), "Histórico de " + u.getNome(), JOptionPane.PLAIN_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(tela, "Usuário não encontrado.");
+            String cpfConsulta = JOptionPane.showInputDialog(tela, "Digite o CPF do aluno para ver o histórico:");
+            if (cpfConsulta != null && !cpfConsulta.isEmpty()) {
+                Usuario u = controladorCliente.buscarCliente(cpfConsulta);
+                if (u != null) {
+                    List<Treino> treinos = u.getTreinos();
+                    StringBuilder sb = new StringBuilder();
+                    if (treinos.isEmpty()) sb.append("Nenhum treino registrado.");
+                    else for (Treino t : treinos) sb.append(t.toString()).append("\n-------------------\n");
+                    
+                    JTextArea area = new JTextArea(sb.toString());
+                    area.setFont(new Font("Consolas", Font.PLAIN, 14));
+                    JOptionPane.showMessageDialog(tela, new JScrollPane(area), "Histórico de " + u.getNome(), JOptionPane.PLAIN_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(tela, "Aluno não encontrado.");
+                }
             }
         });
         topo.add(btnVerTreinos);
@@ -309,10 +304,14 @@ public class TelaComputador {
         painelCentral.setBackground(COR_FUNDO);
         painelCentral.setBorder(new EmptyBorder(20, 50, 20, 50));
 
+        // [MUDANÇA AQUI] Adicionado campo visual para CPF
+        JTextField campoCpf = criarInputEstilizado("CPF do Aluno (ex: 000.000.000-00)");
         JTextField campoNome = criarInputEstilizado("Nome do Treino (ex: Corrida na Praia)");
         JTextField campoData = criarInputEstilizado("Data (dd/MM/yyyy)");
         JTextField campoDuracao = criarInputEstilizado("Duração (minutos)");
 
+        painelCentral.add(campoCpf); // <-- Adicionado ao painel
+        painelCentral.add(Box.createVerticalStrut(15));
         painelCentral.add(campoNome);
         painelCentral.add(Box.createVerticalStrut(15));
         painelCentral.add(campoData);
@@ -324,7 +323,7 @@ public class TelaComputador {
         painelDinamico.setLayout(new BoxLayout(painelDinamico, BoxLayout.Y_AXIS));
         painelDinamico.setBackground(COR_FUNDO);
         painelDinamico.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(COR_DESTAQUE), " Detalhes ", 
+            BorderFactory.createLineBorder(COR_DESTAQUE), " Detalhes do Tipo ", 
             0, 0, FONTE_BOTAO, COR_DESTAQUE));
         
         painelCentral.add(painelDinamico);
@@ -378,28 +377,26 @@ public class TelaComputador {
             painelDinamico.revalidate(); painelDinamico.repaint();
         });
 
-        // LÓGICA DE SALVAR
+        // --- LÓGICA DE SALVAR ATUALIZADA ---
         btnFinalizar.addActionListener(e -> {
             try {
-                // VERIFICAÇÃO DE USUÁRIO
-                String cpfAlvo = CPF_LOGADO;
-                Usuario usuarioCheck = controladorCliente.buscarCliente(CPF_LOGADO);
-                
-                if (usuarioCheck == null) {
-                    cpfAlvo = JOptionPane.showInputDialog(tela, "Usuário padrão não encontrado. Digite o CPF do atleta:");
-                    if (cpfAlvo == null || cpfAlvo.trim().isEmpty()) return; // Cancelou
-                    
-                    if (controladorCliente.buscarCliente(cpfAlvo) == null) {
-                        JOptionPane.showMessageDialog(tela, "CPF não cadastrado no sistema.");
-                        return;
-                    }
-                }
+                // 1. Pega o CPF digitado no campo visual
+                String cpfAlvo = campoCpf.getText();
 
-                if (campoNome.getText().isEmpty() || tipoTreino[0] == null) {
-                    JOptionPane.showMessageDialog(tela, "Preencha todos os dados e selecione o tipo de treino!"); 
+                // 2. Validações básicas
+                if (cpfAlvo.isEmpty() || campoNome.getText().isEmpty() || tipoTreino[0] == null) {
+                    JOptionPane.showMessageDialog(tela, "Por favor, preencha o CPF, Nome e selecione o Tipo de Treino!"); 
                     return;
                 }
-                
+
+                // 3. Verifica se o usuário existe antes de tentar salvar
+                Usuario usuarioEncontrado = controladorCliente.buscarCliente(cpfAlvo);
+                if (usuarioEncontrado == null) {
+                    JOptionPane.showMessageDialog(tela, "Erro: Usuário com CPF '" + cpfAlvo + "' não encontrado.");
+                    return;
+                }
+
+                // 4. Captura os outros dados
                 String nome = campoNome.getText();
                 LocalDate data = LocalDate.parse(campoData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 int duracao = Integer.parseInt(campoDuracao.getText()) * 60;
@@ -416,16 +413,22 @@ public class TelaComputador {
                     desc = Integer.parseInt(campoDescanso[0].getText());
                 }
 
+                // 5. Envia para o controlador usando o CPF digitado
                 controladorTreino.cadastrarTreino(cpfAlvo, tipo, data, duracao, nome, dist, ser, desc);
                 
-                JOptionPane.showMessageDialog(tela, "Treino salvo com sucesso!\nVerifique suas Notificações para ver se bateu alguma meta.");
-                tela.dispose();
+                JOptionPane.showMessageDialog(tela, "Treino cadastrado com sucesso para " + usuarioEncontrado.getNome() + "!");
+                tela.dispose(); 
+
+            } catch (DateTimeParseException dt) {
+                JOptionPane.showMessageDialog(tela, "Erro na data. Use o formato dd/MM/yyyy.");
+            } catch (NumberFormatException nf) {
+                JOptionPane.showMessageDialog(tela, "Erro nos números. Verifique duração, distância ou séries.");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage());
             }
         });
 
-        tela.setSize(500, 650);
+        tela.setSize(500, 700); 
         tela.setLocationRelativeTo(null);
         tela.setVisible(true);
     }
@@ -479,7 +482,6 @@ public class TelaComputador {
         return campo;
     }
 
-    // Auxiliar para labels simples usados no cadastro
     private static JLabel criarLabelSimples(String texto) {
         JLabel lbl = new JLabel(texto);
         lbl.setForeground(Color.WHITE);
