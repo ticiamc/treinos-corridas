@@ -3,89 +3,99 @@ package br.com.gui;
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class TelaPrincipalUsuario {
 
-    public static void abrirTelaUsuario() {
-        // Recupera quem está logado
+    private static final Color COR_FUNDO = new Color(30, 30, 30);
+    private static final Color COR_MENU = new Color(20, 20, 20);
+    private static final Color COR_DESTAQUE = new Color(74, 255, 86);
+
+    public JPanel criarPainelUsuario() {
+        // Recupera o usuário da sessão
         Usuario logado = SessaoUsuario.getInstance().getUsuarioLogado();
+        String nomeUsuario = (logado != null) ? logado.getNome() : "Visitante";
+
+        JPanel painelUsuario = new JPanel(new BorderLayout());
+        painelUsuario.setBackground(COR_FUNDO);
+
+        // --- MENU LATERAL ---
+        JPanel menuLateral = new JPanel();
+        menuLateral.setLayout(new BoxLayout(menuLateral, BoxLayout.Y_AXIS));
+        menuLateral.setBackground(COR_MENU);
+        menuLateral.setPreferredSize(new Dimension(200, 0));
+        menuLateral.setBorder(new EmptyBorder(20, 10, 20, 10));
+
+        // Saudação
+        JLabel lblOla = new JLabel("Olá, " + nomeUsuario.split(" ")[0]);
+        lblOla.setForeground(COR_DESTAQUE);
+        lblOla.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblOla.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        if (logado == null) {
-            JOptionPane.showMessageDialog(null, "Erro de sessão. Faça login novamente.");
-            return;
-        }
+        menuLateral.add(lblOla);
+        menuLateral.add(Box.createVerticalStrut(30)); // Espaço
 
-        JFrame frame = new JFrame("Área do Atleta - " + logado.getNome());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().setBackground(new Color(30, 30, 30));
-        frame.setLayout(new BorderLayout());
-
-        // --- MENU LATERAL SIMPLES ---
-        JPanel menu = new JPanel();
-        menu.setLayout(new GridLayout(6, 1, 10, 10));
-        menu.setBackground(new Color(20, 20, 20));
-        menu.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-
-        JButton btnTreino = criarBotao("Registrar Treino");
-        JButton btnHistorico = criarBotao("Meu Histórico");
-        JButton btnMetas = criarBotao("Minhas Metas");
-        JButton btnDesafios = criarBotao("Desafios");
-        JButton btnNotificacoes = criarBotao("Notificações");
-        JButton btnSair = criarBotao("Sair");
-        btnSair.setBackground(new Color(200, 50, 50)); // Vermelho
-
-        // --- AÇÕES ---
-        
-        // REQ04 e REQ05: Registrar Treino
-        btnTreino.addActionListener(e -> {
-            // Aqui chamamos a tela de cadastro de treino que você já tem
-            // MAS, precisamos adaptá-la para não pedir CPF, pois já sabemos quem é.
-            // Veja o passo 4 abaixo.
-            TelaComputador.abrirTelaCadastroTreinoUsuarioLogado(); 
-        });
-
-        // REQ16 e REQ17: Relatórios
-        btnHistorico.addActionListener(e -> {
-            TelaComputador.abrirTelaHistorico(logado);
+        // Botões do Menu
+        adicionarBotaoMenu(menuLateral, "Registrar Treino", e -> {
+            // Chama a tela de cadastro SEM pedir CPF (pois usa a sessão)
+            TelaComputador.abrirTelaCadastroTreinoUsuarioLogado();
         });
         
-        // REQ20: Notificações
-        btnNotificacoes.addActionListener(e -> {
-            TelaComputador.abrirTelaNotificacoes(); // Essa tela já usa SessaoUsuario se adaptarmos
+        menuLateral.add(Box.createVerticalStrut(10));
+        
+        adicionarBotaoMenu(menuLateral, "Meu Histórico", e -> {
+            if(logado != null) TelaComputador.abrirTelaHistorico(logado);
         });
 
+        menuLateral.add(Box.createVerticalStrut(10));
+
+        adicionarBotaoMenu(menuLateral, "Minhas Metas", e -> TelaComputador.TelaMetas());
+        
+        menuLateral.add(Box.createVerticalStrut(10));
+
+        adicionarBotaoMenu(menuLateral, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
+
+        // Espaço elástico para empurrar o Sair para baixo
+        menuLateral.add(Box.createVerticalGlue());
+
+        // Botão Sair
+        JButton btnSair = new JButton("SAIR / LOGOUT");
+        btnSair.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnSair.setBackground(new Color(200, 50, 50));
+        btnSair.setForeground(Color.WHITE);
+        btnSair.setMaximumSize(new Dimension(180, 40));
         btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
-            frame.dispose();
-            TelaLogin.abrirTelaLogin();
+            // Volta para a tela de Login usando o gerenciador
+            GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
+        menuLateral.add(btnSair);
 
-        menu.add(btnTreino);
-        menu.add(btnHistorico);
-        menu.add(btnMetas);
-        menu.add(btnDesafios);
-        menu.add(btnNotificacoes);
-        menu.add(btnSair);
-
-        frame.add(menu, BorderLayout.WEST);
+        // --- ÁREA CENTRAL (Dashboard Simples) ---
+        JPanel painelCentral = new JPanel(new GridBagLayout());
+        painelCentral.setBackground(COR_FUNDO);
         
-        // Painel Central (Dashboard)
-        JLabel lblBemVindo = new JLabel("<html>Olá, " + logado.getNome() + "!<br>Bora treinar?</html>", SwingConstants.CENTER);
-        lblBemVindo.setForeground(Color.WHITE);
-        lblBemVindo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        frame.add(lblBemVindo, BorderLayout.CENTER);
+        JLabel lblBemVindo = new JLabel("<html><center>Bem-vindo à sua<br>Área do Atleta</center></html>");
+        lblBemVindo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        lblBemVindo.setForeground(Color.DARK_GRAY);
+        
+        painelCentral.add(lblBemVindo);
 
-        frame.setSize(800, 600);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        painelUsuario.add(menuLateral, BorderLayout.WEST);
+        painelUsuario.add(painelCentral, BorderLayout.CENTER);
+
+        return painelUsuario;
     }
 
-    private static JButton criarBotao(String texto) {
+    private void adicionarBotaoMenu(JPanel painel, String texto, java.awt.event.ActionListener acao) {
         JButton btn = new JButton(texto);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(180, 40));
         btn.setBackground(new Color(50, 50, 50));
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
-        return btn;
+        btn.addActionListener(acao);
+        painel.add(btn);
     }
 }
