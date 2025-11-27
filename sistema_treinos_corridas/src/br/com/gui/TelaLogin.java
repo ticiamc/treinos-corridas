@@ -1,7 +1,5 @@
 package br.com.gui;
 
-import br.com.dados.RepositorioClientes;
-import br.com.negocio.ControladorCliente;
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
 
@@ -10,86 +8,85 @@ import java.awt.*;
 
 public class TelaLogin {
 
-    private static ControladorCliente controladorCliente;
-
-    public static void main(String[] args) {
-        // Inicializa dependências
-        RepositorioClientes repo = new RepositorioClientes();
-        controladorCliente = new ControladorCliente(repo);
-        
-        // --- DADOS MOCK (PARA TESTE) ---
-        // Cria um usuário de teste para você conseguir logar
-        if (controladorCliente.buscarCliente("123") == null) {
-            Usuario u = new Usuario("Atleta Teste", 25, 70, 1.75, "teste@email.com", "123");
-            controladorCliente.cadastrarCliente(u);
+    public TelaLogin() {
+        // Inicializa controladores estáticos da TelaComputador se necessário
+        if (TelaComputador.controladorCliente == null) {
+            new TelaComputador(); 
         }
-        // -------------------------------
-
-        abrirTelaLogin();
     }
 
-    public static void abrirTelaLogin() {
-        JFrame frame = new JFrame("Login - Iron Track");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().setBackground(new Color(30, 30, 30));
-        frame.setLayout(new GridBagLayout());
+    /**
+     * Retorna o PAINEL de login para ser exibido na janela principal.
+     */
+    public JPanel criarPainelLogin() {
+        JPanel painelPrincipal = new JPanel(new GridBagLayout());
+        painelPrincipal.setBackground(new Color(30, 30, 30));
 
-        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
-        panel.setBackground(new Color(30, 30, 30));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        JPanel cardLogin = new JPanel(new GridLayout(5, 1, 10, 10));
+        cardLogin.setBackground(new Color(40, 40, 40));
+        cardLogin.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(74, 255, 86), 2),
+            BorderFactory.createEmptyBorder(30, 40, 30, 40)
+        ));
 
-        JLabel lblTitulo = new JLabel("BEM-VINDO", SwingConstants.CENTER);
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        JLabel lblTitulo = new JLabel("IRON TRACK", SwingConstants.CENTER);
+        lblTitulo.setForeground(new Color(74, 255, 86));
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 28));
+
+        JLabel lblSub = new JLabel("Acesso ao Sistema", SwingConstants.CENTER);
+        lblSub.setForeground(Color.GRAY);
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         JTextField txtCpf = new JTextField();
-        txtCpf.setBorder(BorderFactory.createTitledBorder("Digite seu CPF ou 'admin'"));
+        txtCpf.setBorder(BorderFactory.createTitledBorder(null, "Digite CPF ou 'admin'", 0, 0, null, Color.WHITE));
+        txtCpf.setBackground(new Color(60, 60, 60));
+        txtCpf.setForeground(Color.WHITE);
+        txtCpf.setCaretColor(Color.WHITE);
 
         JButton btnEntrar = new JButton("ENTRAR");
-        btnEntrar.setBackground(new Color(74, 255, 86)); // Verde Neon
+        btnEntrar.setBackground(new Color(74, 255, 86));
         btnEntrar.setForeground(Color.BLACK);
+        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Link para cadastro (caso não tenha conta)
         JButton btnCadastrar = new JButton("Não tem conta? Cadastre-se");
-        btnCadastrar.setBackground(new Color(50, 50, 50));
+        btnCadastrar.setBackground(new Color(40, 40, 40));
         btnCadastrar.setForeground(Color.WHITE);
+        btnCadastrar.setBorderPainted(false);
+        btnCadastrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        // --- AÇÕES ---
         btnEntrar.addActionListener(e -> {
             String input = txtCpf.getText();
 
-            // 1. Lógica de Admin
             if (input.equalsIgnoreCase("admin")) {
-                SessaoUsuario.getInstance().logout(); // Garante logout de usuário
-                frame.dispose();
-                TelaComputador.abrirTelaAdmin(); // Vamos criar/adaptar isso
-                return;
-            }
-
-            // 2. Lógica de Usuário Comum
-            Usuario usuario = controladorCliente.buscarCliente(input);
-            if (usuario != null) {
-                SessaoUsuario.getInstance().login(usuario); // Salva na sessão
-                frame.dispose();
-                TelaPrincipalUsuario.abrirTelaUsuario(); // Nova tela só do usuário
+                SessaoUsuario.getInstance().logout();
+                // CORREÇÃO: Usa o GerenciadorTelas para carregar o PAINEL do Admin
+                GerenciadorTelas.getInstance().carregarTela(new TelaComputador().criarPainelAdmin());
             } else {
-                JOptionPane.showMessageDialog(frame, "Usuário não encontrado.");
+                Usuario usuario = TelaComputador.controladorCliente.buscarCliente(input);
+                if (usuario != null) {
+                    SessaoUsuario.getInstance().login(usuario);
+                    // CORREÇÃO: Carrega o PAINEL do Usuário
+                    GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario());
+                } else {
+                    JOptionPane.showMessageDialog(painelPrincipal, "Usuário não encontrado.");
+                }
             }
         });
-        
+
         btnCadastrar.addActionListener(e -> {
-             // Redireciona para a tela de cadastro que você já tem em TelaComputador
-             // Nota: Você pode precisar tornar o método de cadastro static ou acessível
-             JOptionPane.showMessageDialog(frame, "Contate o admin para cadastro ou implemente a tela pública.");
+            // Abre o cadastro como um Pop-up (JFrame separado) pois é um fluxo auxiliar
+            TelaComputador.abrirTelaCadastroUsuario();
         });
 
-        panel.add(lblTitulo);
-        panel.add(txtCpf);
-        panel.add(btnEntrar);
-        panel.add(btnCadastrar);
+        cardLogin.add(lblTitulo);
+        cardLogin.add(lblSub);
+        cardLogin.add(txtCpf);
+        cardLogin.add(btnEntrar);
+        cardLogin.add(btnCadastrar);
 
-        frame.add(panel);
-        frame.setSize(400, 350);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        painelPrincipal.add(cardLogin);
+        return painelPrincipal;
     }
 }
