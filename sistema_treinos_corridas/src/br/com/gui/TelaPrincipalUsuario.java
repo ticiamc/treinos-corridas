@@ -23,37 +23,34 @@ public class TelaPrincipalUsuario {
 
         // --- MENU LATERAL ---
         JPanel menu = new JPanel();
-        menu.setLayout(new GridLayout(7, 1, 10, 10)); // Aumentado para 7 botões
+        menu.setLayout(new GridLayout(7, 1, 10, 10)); 
         menu.setBackground(new Color(20, 20, 20));
         menu.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
         JButton btnTreino = criarBotao("Registrar Treino");
         JButton btnHistorico = criarBotao("Meu Histórico");
-        JButton btnPlanos = criarBotao("Meus Planos"); // [NOVO]
+        JButton btnPlanos = criarBotao("Meus Planos");
         JButton btnMetas = criarBotao("Minhas Metas");
         JButton btnDesafios = criarBotao("Desafios");
         JButton btnNotificacoes = criarBotao("Notificações");
         JButton btnSair = criarBotao("Sair");
         btnSair.setBackground(new Color(200, 50, 50)); // Vermelho
 
-        // --- AÇÕES ---
+        // --- AÇÕES INTEGRADAS ---
         
-        btnTreino.addActionListener(e -> {
-            // Usa o método da TelaComputador, mas teremos que adaptar para pegar o CPF da sessão
-            // Por enquanto, mostra aviso se não tiver o método específico
-            JOptionPane.showMessageDialog(frame, "Para registrar treino, use o Painel Admin (TelaComputador) por enquanto.");
-        });
+        // Passa o usuário logado para as telas da TelaComputador
+        btnTreino.addActionListener(e -> TelaComputador.abrirTelaCadastroTreino(logado));
+        
+        btnHistorico.addActionListener(e -> TelaComputador.abrirTelaRelatorios(logado));
+        
+        btnPlanos.addActionListener(e -> TelaComputador.abrirTelaPlanos(logado));
+        
+        btnMetas.addActionListener(e -> TelaComputador.abrirTelaMetas(logado));
+        
+        // Desafios é global, mas passamos o usuário para facilitar a participação
+        btnDesafios.addActionListener(e -> TelaComputador.abrirTelaDesafios(logado));
 
-        // Reutiliza as telas do Admin, mas passando o usuário logado
-        // (Nota: As telas do Admin geralmente pedem CPF ou usam o 'padrao', 
-        //  o ideal seria refatorar 'TelaComputador' para aceitar um objeto Usuario direto,
-        //  mas para o trabalho escolar, essa integração simples funciona)
-        
-        btnHistorico.addActionListener(e -> JOptionPane.showMessageDialog(frame, "Funcionalidade disponível no Painel Admin."));
-        
-        btnPlanos.addActionListener(e -> JOptionPane.showMessageDialog(frame, "Funcionalidade disponível no Painel Admin."));
-
-        btnNotificacoes.addActionListener(e -> TelaComputador.abrirTelaNotificacoes()); 
+        btnNotificacoes.addActionListener(e -> TelaComputador.abrirTelaNotificacoes(logado)); 
 
         btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
@@ -87,6 +84,7 @@ public class TelaPrincipalUsuario {
         btn.setBackground(new Color(50, 50, 50));
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }
 }
