@@ -2,6 +2,7 @@ package br.com.gui;
 
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -49,6 +50,10 @@ public class TelaLogin {
                 Usuario u = TelaComputador.controladorCliente.buscarCliente(in);
                 if(u != null) {
                     SessaoUsuario.getInstance().login(u);
+                    
+                    // [REQ22] Verifica lembretes automaticamente ao logar
+                    TelaComputador.controladorPlanoTreino.verificarLembretesDoDia(u);
+                    
                     GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario());
                 } else {
                     JOptionPane.showMessageDialog(painel, "Usuário não encontrado.");

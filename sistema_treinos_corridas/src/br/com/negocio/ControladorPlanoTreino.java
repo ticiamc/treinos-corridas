@@ -1,17 +1,15 @@
 package br.com.negocio;
 
 import br.com.dados.IRepositorioCliente;
+import br.com.negocio.treinos.Notificacao;
 import br.com.negocio.treinos.PlanoTreino;
 import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.Usuario;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
-/**
- * Controlador para Planos de Treino.
- * (Arquivo criado pois não estava presente no projeto original)
- */
 public class ControladorPlanoTreino {
 
     private IRepositorioCliente repositorioCliente;
@@ -100,8 +98,47 @@ public class ControladorPlanoTreino {
             throw new Exception("Treino não encontrado *dentro* deste plano.");
         }
 
-        plano.removerTreino(treinoParaRemover); // Método adicionado em PlanoTreino
+        plano.removerTreino(treinoParaRemover);
         repositorioCliente.atualizarElemento(usuario);
         System.out.println("Treino removido do plano com sucesso!");
+    }
+
+    /**
+     * [REQ22] Verifica se o usuário tem treinos agendados para HOJE em seus planos
+     * e gera uma notificação de lembrete se encontrar.
+     */
+    public void verificarLembretesDoDia(Usuario usuario) {
+        if (usuario == null || usuario.getPlanos().isEmpty()) return;
+
+        LocalDate hoje = LocalDate.now();
+        boolean temTreinoHoje = false;
+
+        for (PlanoTreino plano : usuario.getPlanos()) {
+            // Verifica se o plano está ativo (dentro da data)
+            if (!hoje.isBefore(plano.getDataInicio()) && !hoje.isAfter(plano.getDataFim())) {
+                for (Treino t : plano.getTreinosDoPlano()) {
+                    // Verifica se a data do treino é hoje (ignorando hora)
+                    if (t.getDataExecucao().toLocalDate().isEqual(hoje)) {
+                        temTreinoHoje = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (temTreinoHoje) {
+            // Verifica se já não mandou esse lembrete hoje para não flodar notificações repetidas
+            boolean jaAvisou = usuario.getNotificacoes().stream()
+                .anyMatch(n -> n.getMensagem().contains("Lembrete: Você tem treinos planejados para hoje!") 
+                               && n.getData().toLocalDate().isEqual(hoje));
+            
+            if (!jaAvisou) {
+                usuario.adicionarNotificacao(new Notificacao(
+                    UUID.randomUUID(), 
+                    "Lembrete: Você tem treinos planejados para hoje! Consulte seus Planos.", 
+                    java.time.LocalDateTime.now()
+                ));
+            }
+        }
     }
 }

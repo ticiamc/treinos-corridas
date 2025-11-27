@@ -39,6 +39,12 @@ public class ControladorDesafio {
             throw new Exception("Desafio não encontrado.");
         }
         
+        // --- [REQ25] REGRA DE NEGÓCIO: Atividade Mínima Prévia ---
+        if (usuario.getTreinos().isEmpty()) {
+            throw new Exception("Regra do Desafio: Você precisa ter ao menos 1 treino registrado para competir!");
+        }
+        // ---------------------------------------------------------
+        
         desafio.adicionarParticipante(usuario);
         repositorioDesafio.atualizar(desafio);
     }
@@ -74,10 +80,6 @@ public class ControladorDesafio {
         return desafio;
     }
     
-    /**
-     * Remove um desafio do sistema.
-     * @param idDesafio O ID (int) do desafio a ser removido.
-     */
     public void removerDesafio(int idDesafio) {
         Desafio desafio = repositorioDesafio.buscar(idDesafio);
         
