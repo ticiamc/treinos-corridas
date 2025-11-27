@@ -4,10 +4,6 @@ import br.com.negocio.treinos.Desafio;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implementação em memória do repositório de Desafios.
- * (Arquivo criado pois não estava presente no projeto original)
- */
 public class RepositorioDesafio implements IRepositorioDesafio {
 
     private List<Desafio> desafios;
@@ -45,7 +41,7 @@ public class RepositorioDesafio implements IRepositorioDesafio {
 
     @Override
     public List<Desafio> listarTodos() {
-        return new ArrayList<>(desafios); // Retorna cópia
+        return new ArrayList<>(desafios);
     }
 
     @Override
@@ -53,3 +49,4 @@ public class RepositorioDesafio implements IRepositorioDesafio {
         this.desafios.removeIf(d -> d.getIdDesafio() == idDesafio);
     }
 }
+
