@@ -1,7 +1,5 @@
 package br.com.gui;
 
-import br.com.dados.RepositorioClientes;
-import br.com.negocio.ControladorCliente;
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
 
@@ -10,16 +8,14 @@ import java.awt.*;
 
 public class TelaLogin {
 
-    private ControladorCliente controladorCliente;
-
     public TelaLogin() {
-        // Inicializa dependências necessárias para o login
-        this.controladorCliente = new ControladorCliente(new RepositorioClientes());
+        // Não precisamos mais criar um controlador novo aqui.
+        // Vamos usar o compartilhado da TelaComputador.
         
-        // Mock de dados para teste rápido (opcional)
-        if (controladorCliente.buscarCliente("123") == null) {
-            Usuario u = new Usuario("Atleta Teste", 25, 70, 1.75, "teste@email.com", "123");
-            controladorCliente.cadastrarCliente(u);
+        // Força a inicialização dos dados caso ainda não tenha ocorrido
+        // (Acessar a classe TelaComputador dispara o bloco static dela)
+        if (TelaComputador.controladorCliente == null) {
+            new TelaComputador(); // Apenas para garantir o 'static' block se necessário
         }
     }
 
@@ -83,7 +79,9 @@ public class TelaLogin {
             } 
             // Caminho do USUÁRIO
             else {
-                Usuario usuario = controladorCliente.buscarCliente(input);
+                // [CORREÇÃO AQUI] Usa o controlador compartilhado da TelaComputador
+                Usuario usuario = TelaComputador.controladorCliente.buscarCliente(input);
+                
                 if (usuario != null) {
                     SessaoUsuario.getInstance().login(usuario);
                     // Navega para o painel do Usuário
@@ -94,8 +92,7 @@ public class TelaLogin {
             }
         });
 
-        // 2. [CORREÇÃO] Ação do Botão Cadastrar
-        // Chama a tela de cadastro que está definida estática na TelaComputador
+        // 2. Ação do Botão Cadastrar
         btnCadastrar.addActionListener(e -> {
             TelaComputador.abrirTelaCadastroUsuario();
         });

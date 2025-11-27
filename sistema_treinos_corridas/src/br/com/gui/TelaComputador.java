@@ -10,6 +10,8 @@ import br.com.negocio.treinos.Usuario;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,23 +27,37 @@ public class TelaComputador {
     public static ControladorTreino controladorTreino;
     public static final String CPF_LOGADO = "000.000.000-00"; 
 
-    // --- PALETA DE CORES ---
+    // --- PALETA DE CORES (MODERNA) ---
     private static final Color COR_FUNDO = new Color(30, 30, 30);
     private static final Color COR_PAINEL_LATERAL = new Color(20, 20, 20);
-    private static final Color COR_DESTAQUE = new Color(74, 255, 86);
+    private static final Color COR_DESTAQUE = new Color(74, 255, 86); // Verde Neon
     private static final Color COR_BOTAO_FUNDO = new Color(50, 50, 50);
     private static final Color COR_TEXTO = new Color(240, 240, 240);
+    
+    // Cores específicas da Tabela
+    private static final Color COR_TABELA_FUNDO = new Color(45, 45, 45);
+    private static final Color COR_TABELA_LINHA = new Color(60, 60, 60);
+
+    // Fontes
     private static final Font FONTE_TITULO = new Font("Segoe UI", Font.BOLD, 32);
     private static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 16);
 
-    // Construtor para inicializar controladores se necessário
-    public TelaComputador() {
+    // --- Inicialização Estática ---
+    static {
         if (controladorCliente == null) {
             RepositorioClientes repo = new RepositorioClientes();
             controladorCliente = new ControladorCliente(repo);
             controladorTreino = new ControladorTreino(repo);
+            
+            // Dados de teste
+            if(controladorCliente.buscarCliente(CPF_LOGADO) == null) {
+                Usuario userTeste = new Usuario("Usuário Teste", 25, 70, 1.75, "teste@email.com", CPF_LOGADO);
+                controladorCliente.cadastrarCliente(userTeste);
+            }
         }
     }
+
+    public TelaComputador() {}
 
     // --- [PRINCIPAL] Método que retorna o PAINEL do Admin ---
     public JPanel criarPainelAdmin() {
@@ -51,7 +67,7 @@ public class TelaComputador {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         
-        // --- PAINEL LATERAL (Esquerda) ---
+        // PAINEL LATERAL
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridheight = 4; 
         gbc.weightx = 0.3; gbc.weighty = 1.0;
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -74,27 +90,23 @@ public class TelaComputador {
         painelLateral.add(lblTitulo, BorderLayout.CENTER);
         painelLateral.add(lblSubtitulo, BorderLayout.NORTH);
 
-        // Botão Logout no Painel Lateral
         JButton btnLogout = new JButton("SAIR (LOGOUT)");
         btnLogout.setBackground(new Color(200, 50, 50));
         btnLogout.setForeground(Color.WHITE);
         btnLogout.setFocusPainted(false);
         btnLogout.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
-            // Volta para Login
             GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
         painelLateral.add(btnLogout, BorderLayout.SOUTH);
         
         painelGeral.add(painelLateral, gbc);
 
-        // --- BOTÕES DE FUNCIONALIDADES (Direita) ---
+        // BOTÕES DE FUNCIONALIDADES
         gbc.gridheight = 1; gbc.weightx = 0.35;
         gbc.insets = new Insets(10, 5, 10, 5);
 
-        // Coluna 1
         gbc.gridx = 1; 
-        
         JButton btnCadastrar = criarBotaoEstilizado("Cadastrar Atleta");
         btnCadastrar.addActionListener(e -> abrirTelaCadastroUsuario());
         painelGeral.add(btnCadastrar, configuracaoGrid(1, 0));
@@ -106,7 +118,6 @@ public class TelaComputador {
         painelGeral.add(criarBotaoEstilizado("Gerenciar Desafios"), configuracaoGrid(1, 2));
         painelGeral.add(criarBotaoEstilizado("Gerenciar Metas"), configuracaoGrid(1, 3));
 
-        // Coluna 2
         gbc.gridx = 2;
         painelGeral.add(criarBotaoEstilizado("Relatórios Gerais"), configuracaoGrid(2, 0));
         painelGeral.add(criarBotaoEstilizado("Planos de Treino"), configuracaoGrid(2, 1));
@@ -114,7 +125,7 @@ public class TelaComputador {
         JButton btnTreinos = criarBotaoEstilizado("REGISTRAR TREINO");
         btnTreinos.setForeground(Color.BLACK);
         btnTreinos.setBackground(COR_DESTAQUE); 
-        btnTreinos.addActionListener(e -> abrirTelaCadastroTreino()); // Admin usa versão com CPF
+        btnTreinos.addActionListener(e -> abrirTelaCadastroTreino());
         
         btnTreinos.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnTreinos.setBackground(Color.WHITE); }
@@ -126,9 +137,7 @@ public class TelaComputador {
         return painelGeral;
     }
 
-    // --- MÉTODOS AUXILIARES DE ABERTURA DE JANELAS SECUNDÁRIAS (Modais) ---
-    // (Estas janelas "filhas" continuam sendo JFrames ou JDialogs separados, 
-    // pois são temporários sobre a janela principal)
+    // --- MÉTODOS DE JANELAS SECUNDÁRIAS ---
 
     public static void abrirTelaCadastroUsuario() {
         JFrame tela = new JFrame("Cadastrar Novo Atleta");
@@ -310,6 +319,9 @@ public class TelaComputador {
                 if (usuarioPreDefinido != null) {
                     cpfAlvo = usuarioPreDefinido.getCpf();
                 } else {
+                    if(finalCampoCpf.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(tela, "Digite o CPF."); return;
+                    }
                     cpfAlvo = finalCampoCpf.getText();
                     if (controladorCliente.buscarCliente(cpfAlvo) == null) {
                         JOptionPane.showMessageDialog(tela, "Cliente não encontrado."); return;
@@ -379,34 +391,101 @@ public class TelaComputador {
         tela.setVisible(true);
     }
 
+    // --- [CORREÇÃO] TELA DE HISTÓRICO MODERNA RESTAURADA ---
     public static void abrirTelaHistorico(Usuario u) {
         if (u == null) return;
-        JFrame tela = new JFrame("Histórico - " + u.getNome());
+
+        JFrame tela = new JFrame("Histórico de Performance - " + u.getNome());
         tela.getContentPane().setBackground(COR_FUNDO);
         tela.setLayout(new BorderLayout());
 
-        String[] colunas = {"Data", "Treino", "Tipo", "Minutos", "Detalhes"};
-        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(colunas, 0);
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        // Título Estilizado
+        JLabel lblTitulo = new JLabel("Histórico de Atividades", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitulo.setForeground(COR_DESTAQUE);
+        lblTitulo.setBorder(new EmptyBorder(20, 0, 20, 0));
+        tela.add(lblTitulo, BorderLayout.NORTH);
 
-        for(Treino t : u.getTreinos()) {
+        // Modelo da Tabela
+        String[] colunas = {"Data", "Treino", "Tipo", "Duração", "Detalhes", "Kcal"};
+        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(colunas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        DateTimeFormatter fmtData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        for (Treino t : u.getTreinos()) {
+            String data = t.getDataExecucao().format(fmtData);
+            String nome = t.getNomeTreino();
             String tipo = (t instanceof br.com.negocio.treinos.Corrida) ? "Corrida" : "Intervalado";
-            String det = (t instanceof br.com.negocio.treinos.Corrida) ? 
-                String.format("%.2f km", ((br.com.negocio.treinos.Corrida)t).getDistanciaEmMetros()/1000) : 
-                "Séries";
-            model.addRow(new Object[]{t.getDataExecucao().format(fmt), t.getNomeTreino(), tipo, t.getDuracaoSegundos()/60, det});
+            String duracao = (t.getDuracaoSegundos() / 60) + " min";
+            
+            String detalhes = "-";
+            if (t instanceof br.com.negocio.treinos.Corrida) {
+                double km = ((br.com.negocio.treinos.Corrida) t).getDistanciaEmMetros() / 1000.0;
+                detalhes = String.format("%.2f km", km);
+            } else if (t instanceof br.com.negocio.treinos.Intervalado) {
+                br.com.negocio.treinos.Intervalado i = (br.com.negocio.treinos.Intervalado) t;
+                detalhes = i.getSeries() + " séries / " + i.getDescansoEntreSeriesSeg() + "s";
+            }
+
+            String calorias = String.format("%.0f", t.calcularCaloriasQueimadas(u));
+            model.addRow(new Object[]{data, nome, tipo, duracao, detalhes, calorias});
         }
 
-        JTable table = new JTable(model);
-        table.setBackground(new Color(60,60,60));
-        table.setForeground(Color.WHITE);
-        tela.add(new JScrollPane(table), BorderLayout.CENTER);
-        tela.setSize(600, 400);
+        // --- ESTILIZAÇÃO AVANÇADA DA TABELA ---
+        JTable tabela = new JTable(model);
+        tabela.setBackground(COR_TABELA_FUNDO);
+        tabela.setForeground(Color.WHITE);
+        tabela.setGridColor(COR_TABELA_LINHA);
+        tabela.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tabela.setRowHeight(30); // Linhas mais altas
+        tabela.setFillsViewportHeight(true);
+        tabela.setSelectionBackground(COR_DESTAQUE);
+        tabela.setSelectionForeground(Color.BLACK);
+
+        // Remove bordas
+        tabela.setShowVerticalLines(false);
+        tabela.setIntercellSpacing(new Dimension(0, 1));
+
+        // Cabeçalho da Tabela
+        JTableHeader header = tabela.getTableHeader();
+        header.setBackground(COR_PAINEL_LATERAL);
+        header.setForeground(COR_DESTAQUE);
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, COR_DESTAQUE));
+        
+        // Renderizador para centralizar texto
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for(int i=0; i<tabela.getColumnCount(); i++) {
+            tabela.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        JScrollPane scroll = new JScrollPane(tabela);
+        scroll.getViewport().setBackground(COR_FUNDO); // Fundo escuro atrás da tabela
+        scroll.setBorder(new EmptyBorder(10, 20, 20, 20)); 
+        
+        tela.add(scroll, BorderLayout.CENTER);
+
+        // Botão Fechar
+        JButton btnFechar = criarBotaoEstilizado("FECHAR");
+        btnFechar.addActionListener(e -> tela.dispose());
+        JPanel painelBotao = new JPanel();
+        painelBotao.setBackground(COR_FUNDO);
+        painelBotao.setBorder(new EmptyBorder(0,0,20,0));
+        painelBotao.add(btnFechar);
+        tela.add(painelBotao, BorderLayout.SOUTH);
+
+        tela.setSize(800, 500);
         tela.setLocationRelativeTo(null);
         tela.setVisible(true);
     }
 
-    // --- MÉTODOS AUXILIARES ---
+    // --- MÉTODOS AUXILIARES DE ESTILO ---
     private static GridBagConstraints configuracaoGrid(int x, int y) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x; gbc.gridy = y; gbc.fill = GridBagConstraints.BOTH;
