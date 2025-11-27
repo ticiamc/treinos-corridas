@@ -2,91 +2,68 @@ package br.com.gui;
 
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class TelaLogin {
 
     public TelaLogin() {
-        // Inicializa controladores estáticos da TelaComputador se necessário
+        // Garante que os dados/controladores estáticos sejam carregados
         if (TelaComputador.controladorCliente == null) {
             new TelaComputador(); 
         }
     }
 
-    /**
-     * Retorna o PAINEL de login para ser exibido na janela principal.
-     */
     public JPanel criarPainelLogin() {
-        JPanel painelPrincipal = new JPanel(new GridBagLayout());
-        painelPrincipal.setBackground(new Color(30, 30, 30));
+        JPanel painel = new JPanel(new GridBagLayout());
+        painel.setBackground(new Color(30, 30, 30));
 
-        JPanel cardLogin = new JPanel(new GridLayout(5, 1, 10, 10));
-        cardLogin.setBackground(new Color(40, 40, 40));
-        cardLogin.setBorder(BorderFactory.createCompoundBorder(
+        JPanel card = new JPanel(new GridLayout(5, 1, 10, 10));
+        card.setBackground(new Color(45, 45, 45));
+        card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(74, 255, 86), 2),
-            BorderFactory.createEmptyBorder(30, 40, 30, 40)
+            BorderFactory.createEmptyBorder(30, 50, 30, 50)
         ));
 
-        JLabel lblTitulo = new JLabel("IRON TRACK", SwingConstants.CENTER);
-        lblTitulo.setForeground(new Color(74, 255, 86));
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        JLabel titulo = new JLabel("IRON TRACK", SwingConstants.CENTER);
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titulo.setForeground(new Color(74, 255, 86));
 
-        JLabel lblSub = new JLabel("Acesso ao Sistema", SwingConstants.CENTER);
-        lblSub.setForeground(Color.GRAY);
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        JTextField txtCpf = new JTextField();
-        txtCpf.setBorder(BorderFactory.createTitledBorder(null, "Digite CPF ou 'admin'", 0, 0, null, Color.WHITE));
-        txtCpf.setBackground(new Color(60, 60, 60));
-        txtCpf.setForeground(Color.WHITE);
-        txtCpf.setCaretColor(Color.WHITE);
+        JTextField txtInput = new JTextField();
+        txtInput.setBorder(BorderFactory.createTitledBorder("CPF ou 'admin'"));
 
         JButton btnEntrar = new JButton("ENTRAR");
         btnEntrar.setBackground(new Color(74, 255, 86));
         btnEntrar.setForeground(Color.BLACK);
-        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        JButton btnCadastrar = new JButton("Não tem conta? Cadastre-se");
-        btnCadastrar.setBackground(new Color(40, 40, 40));
-        btnCadastrar.setForeground(Color.WHITE);
-        btnCadastrar.setBorderPainted(false);
-        btnCadastrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // --- AÇÕES ---
+        JButton btnCadastro = new JButton("Cadastrar Novo Atleta");
+        btnCadastro.setBackground(Color.GRAY);
+        btnCadastro.setForeground(Color.WHITE);
+
         btnEntrar.addActionListener(e -> {
-            String input = txtCpf.getText();
-
-            if (input.equalsIgnoreCase("admin")) {
+            String in = txtInput.getText();
+            if(in.equalsIgnoreCase("admin")) {
                 SessaoUsuario.getInstance().logout();
-                // CORREÇÃO: Usa o GerenciadorTelas para carregar o PAINEL do Admin
                 GerenciadorTelas.getInstance().carregarTela(new TelaComputador().criarPainelAdmin());
             } else {
-                Usuario usuario = TelaComputador.controladorCliente.buscarCliente(input);
-                if (usuario != null) {
-                    SessaoUsuario.getInstance().login(usuario);
-                    // CORREÇÃO: Carrega o PAINEL do Usuário
+                Usuario u = TelaComputador.controladorCliente.buscarCliente(in);
+                if(u != null) {
+                    SessaoUsuario.getInstance().login(u);
                     GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario());
                 } else {
-                    JOptionPane.showMessageDialog(painelPrincipal, "Usuário não encontrado.");
+                    JOptionPane.showMessageDialog(painel, "Usuário não encontrado.");
                 }
             }
         });
 
-        btnCadastrar.addActionListener(e -> {
-            // Abre o cadastro como um Pop-up (JFrame separado) pois é um fluxo auxiliar
-            TelaComputador.abrirTelaCadastroUsuario();
-        });
+        btnCadastro.addActionListener(e -> TelaComputador.abrirTelaCadastroUsuario());
 
-        cardLogin.add(lblTitulo);
-        cardLogin.add(lblSub);
-        cardLogin.add(txtCpf);
-        cardLogin.add(btnEntrar);
-        cardLogin.add(btnCadastrar);
-
-        painelPrincipal.add(cardLogin);
-        return painelPrincipal;
+        card.add(titulo);
+        card.add(new JLabel("Login do Sistema", SwingConstants.CENTER));
+        card.add(txtInput);
+        card.add(btnEntrar);
+        card.add(btnCadastro);
+        painel.add(card);
+        return painel;
     }
 }

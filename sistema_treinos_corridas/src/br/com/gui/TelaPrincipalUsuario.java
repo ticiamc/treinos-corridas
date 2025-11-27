@@ -3,88 +3,61 @@ package br.com.gui;
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class TelaPrincipalUsuario {
 
-    public static void abrirTelaUsuario() {
-        // Recupera quem está logado
+    public JPanel criarPainelUsuario() {
         Usuario logado = SessaoUsuario.getInstance().getUsuarioLogado();
         
-        if (logado == null) {
-            JOptionPane.showMessageDialog(null, "Erro de sessão. Faça login novamente.");
-            return;
-        }
-
-        JFrame frame = new JFrame("Área do Atleta - " + logado.getNome());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().setBackground(new Color(30, 30, 30));
-        frame.setLayout(new BorderLayout());
-
-        // --- MENU LATERAL ---
+        JPanel painel = new JPanel(new BorderLayout());
+        
+        // Menu
         JPanel menu = new JPanel();
-        menu.setLayout(new GridLayout(7, 1, 10, 10)); 
-        menu.setBackground(new Color(20, 20, 20));
-        menu.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+        menu.setBackground(new Color(30, 30, 30));
+        menu.setBorder(new EmptyBorder(20, 10, 20, 10));
+        
+        JLabel lbl = new JLabel("Olá, " + (logado!=null?logado.getNome():"Atleta"));
+        lbl.setForeground(Color.WHITE);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        menu.add(lbl);
+        menu.add(Box.createVerticalStrut(20));
 
-        JButton btnTreino = criarBotao("Registrar Treino");
-        JButton btnHistorico = criarBotao("Meu Histórico");
-        JButton btnPlanos = criarBotao("Meus Planos");
-        JButton btnMetas = criarBotao("Minhas Metas");
-        JButton btnDesafios = criarBotao("Desafios");
-        JButton btnNotificacoes = criarBotao("Notificações");
-        JButton btnSair = criarBotao("Sair");
-        btnSair.setBackground(new Color(200, 50, 50)); // Vermelho
+        adicionarBotao(menu, "Registrar Treino", e -> TelaComputador.abrirTelaCadastroTreino(logado));
+        adicionarBotao(menu, "Meus Planos", e -> TelaComputador.abrirTelaPlanos(logado));
+        adicionarBotao(menu, "Meus Desafios", e -> TelaComputador.abrirTelaDesafios(logado));
+        adicionarBotao(menu, "Minhas Metas", e -> TelaComputador.abrirTelaMetas(logado));
+        adicionarBotao(menu, "Relatório / CSV", e -> TelaComputador.abrirTelaRelatorios(logado));
+        adicionarBotao(menu, "Notificações", e -> TelaComputador.abrirTelaNotificacoes(logado));
 
-        // --- AÇÕES INTEGRADAS ---
-        
-        // Passa o usuário logado para as telas da TelaComputador
-        btnTreino.addActionListener(e -> TelaComputador.abrirTelaCadastroTreino(logado));
-        
-        btnHistorico.addActionListener(e -> TelaComputador.abrirTelaRelatorios(logado));
-        
-        btnPlanos.addActionListener(e -> TelaComputador.abrirTelaPlanos(logado));
-        
-        btnMetas.addActionListener(e -> TelaComputador.abrirTelaMetas(logado));
-        
-        // Desafios é global, mas passamos o usuário para facilitar a participação
-        btnDesafios.addActionListener(e -> TelaComputador.abrirTelaDesafios(logado));
-
-        btnNotificacoes.addActionListener(e -> TelaComputador.abrirTelaNotificacoes(logado)); 
-
+        menu.add(Box.createVerticalGlue());
+        JButton btnSair = new JButton("SAIR");
+        btnSair.setBackground(new Color(200, 50, 50));
+        btnSair.setForeground(Color.WHITE);
         btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
-            frame.dispose();
-            TelaLogin.abrirTelaLogin();
+            GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
-
-        menu.add(btnTreino);
-        menu.add(btnHistorico);
-        menu.add(btnPlanos);
-        menu.add(btnMetas);
-        menu.add(btnDesafios);
-        menu.add(btnNotificacoes);
         menu.add(btnSair);
 
-        frame.add(menu, BorderLayout.WEST);
-        
-        // Painel Central (Dashboard)
-        JLabel lblBemVindo = new JLabel("<html><center>Olá, " + logado.getNome() + "!<br>Bora treinar?</center></html>", SwingConstants.CENTER);
-        lblBemVindo.setForeground(Color.WHITE);
-        lblBemVindo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        frame.add(lblBemVindo, BorderLayout.CENTER);
+        // Centro
+        JPanel centro = new JPanel(new GridBagLayout());
+        JLabel l = new JLabel("Área do Atleta");
+        l.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        centro.add(l);
 
-        frame.setSize(800, 600);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        painel.add(menu, BorderLayout.WEST);
+        painel.add(centro, BorderLayout.CENTER);
+        return painel;
     }
 
-    private static JButton criarBotao(String texto) {
-        JButton btn = new JButton(texto);
-        btn.setBackground(new Color(50, 50, 50));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return btn;
+    private void adicionarBotao(JPanel p, String t, java.awt.event.ActionListener l) {
+        JButton b = new JButton(t);
+        b.setMaximumSize(new Dimension(180, 40));
+        b.addActionListener(l);
+        p.add(b);
+        p.add(Box.createVerticalStrut(10));
     }
 }
