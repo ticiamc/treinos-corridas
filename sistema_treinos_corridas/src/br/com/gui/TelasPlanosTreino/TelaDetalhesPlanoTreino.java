@@ -1,5 +1,7 @@
 package br.com.gui.TelasPlanosTreino;
 
+import br.com.gui.GerenciadorTelas;
+import br.com.gui.TelaComputador;
 import br.com.negocio.ControladorCliente;
 import br.com.negocio.treinos.Usuario;
 import br.com.negocio.treinos.PlanoTreino;

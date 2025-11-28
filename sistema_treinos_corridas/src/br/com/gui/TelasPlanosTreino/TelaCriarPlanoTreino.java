@@ -1,5 +1,6 @@
 package br.com.gui.TelasPlanosTreino;
 
+import br.com.gui.GerenciadorTelas;
 import br.com.negocio.ControladorCliente;
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
@@ -91,7 +92,7 @@ public class TelaCriarPlanoTreino {
             }
 
             PlanoTreino plano = new PlanoTreino(nome, inicio, fim, usuario);
-            usuario.adicionarPlano(plano);
+            usuario.adicionarPlanoTreino(plano);
             controlador.atualizarCliente(usuario);
 
             JOptionPane.showMessageDialog(painel, "Plano criado com sucesso!");
