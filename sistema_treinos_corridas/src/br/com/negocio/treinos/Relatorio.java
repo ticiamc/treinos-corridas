@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Relatorio {
@@ -13,14 +14,24 @@ public class Relatorio {
     public static String gerarRelatorioAtividadesTexto(Usuario cliente) {
         StringBuilder sb = new StringBuilder();
         sb.append("--- Relatório de Atividades: ").append(cliente.getNome()).append(" ---\n\n");
+        
         if (cliente.getTreinos().isEmpty()) {
             sb.append("Nenhuma atividade registrada neste perfil.\n");
         } else {
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             for (Treino t : cliente.getTreinos()) {
                 String detalhes = "";
-                if (t instanceof Corrida) detalhes = String.format("%.2f km", ((Corrida) t).getDistanciaEmMetros() / 1000.0);
-                else if (t instanceof Intervalado) detalhes = ((Intervalado) t).getSeries() + " séries";
+                
+                // ALTERAÇÃO AQUI: Incluindo Velocidade Média se for Corrida
+                if (t instanceof Corrida) {
+                    Corrida c = (Corrida) t;
+                    detalhes = String.format("%.2f km | Vel. Média: %.1f km/h", 
+                        c.getDistanciaEmMetros() / 1000.0,
+                        c.calcularVelocidadeMediaKmPorHora());
+                } 
+                else if (t instanceof Intervalado) {
+                    detalhes = ((Intervalado) t).getSeries() + " séries";
+                }
                 
                 sb.append(String.format("Data: %s | Treino: %s | %s | %d min\n",
                     t.getDataExecucao().format(fmt), t.getNomeTreino(), detalhes, t.getDuracaoSegundos() / 60));
@@ -32,16 +43,31 @@ public class Relatorio {
 
     public static void exportarRelatorioAtividadesCSV(Usuario cliente, String caminhoArquivo) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(caminhoArquivo))) {
-            writer.println("Data,Nome do Treino,Tipo,Duracao(min),Calorias,Detalhes");
+            // ALTERAÇÃO AQUI: Adicionando coluna Velocidade na exportação
+            writer.println("Data,Nome do Treino,Tipo,Duracao(min),Calorias,Detalhes,VelocidadeMedia(km/h)");
+            
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
             for (Treino t : cliente.getTreinos()) {
                 String tipo = (t instanceof Corrida) ? "Corrida" : "Intervalado";
-                String detalhes = (t instanceof Corrida) 
-                        ? String.valueOf(((Corrida) t).getDistanciaEmMetros()) 
-                        : String.valueOf(((Intervalado) t).getSeries());
-                writer.printf("%s,%s,%s,%d,%.2f,%s%n",
-                        t.getDataExecucao().format(fmt), t.getNomeTreino(), tipo,
-                        t.getDuracaoSegundos() / 60, t.calcularCaloriasQueimadas(cliente), detalhes);
+                String detalhes = "";
+                String velocidade = "0.0";
+
+                if (t instanceof Corrida) {
+                    Corrida c = (Corrida) t;
+                    detalhes = String.valueOf(c.getDistanciaEmMetros());
+                    velocidade = String.format("%.2f", c.calcularVelocidadeMediaKmPorHora()).replace(',', '.');
+                } else if (t instanceof Intervalado) {
+                    detalhes = String.valueOf(((Intervalado) t).getSeries());
+                }
+
+                writer.printf("%s,%s,%s,%d,%.2f,%s,%s%n",
+                        t.getDataExecucao().format(fmt), 
+                        t.getNomeTreino(), 
+                        tipo,
+                        t.getDuracaoSegundos() / 60, 
+                        t.calcularCaloriasQueimadas(cliente), 
+                        detalhes,
+                        velocidade);
             }
         }
     }
