@@ -9,41 +9,37 @@ public final class TreinoProgresso {
     public static void verificarTodasMetas(Usuario usuario, Treino treino) {
         for (Meta meta : usuario.getMetas()) {
             
-            // Só verifica metas que ainda estão "Pendente"
+            // Só verifica metas Pendentes
             if (meta.getStatus().equalsIgnoreCase("Pendente")) {
                 
-                //  Validação de Prazo 
+                // 1. Validação de Prazo e Início
                 LocalDate dataDoTreino = treino.getDataExecucao().toLocalDate();
-                LocalDate prazoFinal = meta.getDataFim();
+                if (dataDoTreino.isAfter(meta.getDataFim()) || dataDoTreino.isBefore(meta.getDataInicio())) {
+                    continue; // Treino fora do período da meta
+                }
+
+                // 2. Atualização do Progresso (Acumulativo)
+                if (meta.getTipo() == TipoMeta.CALORIAS) {
+                    // Qualquer treino gera calorias
+                    meta.adicionarProgresso(treino.calcularCaloriasQueimadas(usuario));
                 
-                // Se o treino foi realizado DEPOIS do prazo da meta, ele não conta.
-                if (dataDoTreino.isAfter(prazoFinal)) {
-                    continue; // Pula para a próxima meta, ignorando esta
-                }
-                // -------------------------------------------------
-
-                boolean metaBatida = false;
-
-                // Lógica de verificação dos valores 
-                if (treino instanceof Corrida) {
-                    Corrida corrida = (Corrida) treino;
-                    if (meta.getTipo() == TipoMeta.DISTANCIA) {
-                        if (corrida.getDistanciaEmMetros() >= meta.getDistancia()) metaBatida = true;
-                    } else if (meta.getTipo() == TipoMeta.TEMPO) {
-                        if ((corrida.getDuracaoSegundos() / 60.0) >= meta.getTempo()) metaBatida = true;
-                    }
-                } else if (treino instanceof Intervalado) {
-                    Intervalado intervalado = (Intervalado) treino;
-                    if (meta.getTipo() == TipoMeta.TEMPO) {
-                        if ((intervalado.getDuracaoSegundos() / 60.0) >= meta.getTempo()) metaBatida = true;
+                } else if (meta.getTipo() == TipoMeta.TEMPO) {
+                    // Qualquer treino tem duração (convertendo segundos para minutos)
+                    meta.adicionarProgresso(treino.getDuracaoSegundos() / 60.0);
+                
+                } else if (meta.getTipo() == TipoMeta.DISTANCIA) {
+                    // Apenas Corrida tem distância
+                    if (treino instanceof Corrida) {
+                        meta.adicionarProgresso(((Corrida) treino).getDistanciaEmMetros());
                     }
                 }
 
-                if (metaBatida) {
+                // 3. Verificação de Conclusão
+                if (meta.getProgressoAtual() >= meta.getValorAlvo()) {
                     meta.setStatus("Concluída"); 
                     Notificacao notificacao = new Notificacao(
                         java.util.UUID.randomUUID(),
-                        "Parabéns! Você atingiu sua meta: " + meta.getDescricao(),
+                        "Parabéns! Você concluiu a meta: " + meta.getDescricao(),
                         LocalDateTime.now()
                     );
                     usuario.adicionarNotificacao(notificacao);

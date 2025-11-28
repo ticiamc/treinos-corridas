@@ -3,6 +3,7 @@ package br.com.gui;
 import br.com.dados.RepositorioClientes;
 import br.com.dados.RepositorioDesafio;
 import br.com.dados.RepositorioPlanoTreino;
+import br.com.gui.TelasPlanosTreino.TelaPlanosPrincipal;
 import br.com.negocio.*;
 import br.com.negocio.treinos.*;
 import br.com.excecoes.*;
@@ -164,10 +165,17 @@ public class TelaComputador {
         JButton btnFinalizar = criarBotaoEstilizado("SALVAR");
         btnFinalizar.setBackground(COR_DESTAQUE);
         btnFinalizar.setForeground(Color.BLACK);
+        
+        // BOTÃO CANCELAR ADICIONADO
+        JButton btnCancelar = criarBotaoEstilizado("Cancelar");
+        btnCancelar.setBackground(new Color(180, 50, 50));
+        btnCancelar.addActionListener(e -> tela.dispose());
 
         painelBotoes.add(btnCorrida);
         painelBotoes.add(btnIntervalado);
         painelBotoes.add(btnFinalizar);
+        painelBotoes.add(btnCancelar); // Adicionado ao painel
+        
         tela.add(painelBotoes, BorderLayout.SOUTH);
 
         final JTextField[] campoDistancia = {null};
@@ -237,6 +245,10 @@ public class TelaComputador {
         tela.setVisible(true);
     }
 
+    public static void abrirTelaHistorico(Usuario u) {
+        GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(u).criarPainel());
+    }
+
     public static void TelaMetas() { GerenciadorTelas.getInstance().carregarTela(new TelaMetas().criarPainel()); }
     public static void TelaDesafios() { GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel()); }
     
@@ -252,6 +264,7 @@ public class TelaComputador {
         campo.setBorder(BorderFactory.createTitledBorder(null, titulo, 0, 0, new Font("Segoe UI", Font.PLAIN, 12), Color.WHITE));
         campo.setBackground(new Color(60, 60, 60));
         campo.setForeground(Color.WHITE);
+        campo.setCaretColor(COR_DESTAQUE);
         return campo;
     }
 }
