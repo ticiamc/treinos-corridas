@@ -8,6 +8,9 @@ import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Notificacao;
 import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.Usuario;
+import br.com.excecoes.CampoVazioException;
+import br.com.excecoes.UsuarioNaoEncontradoException;
+import br.com.excecoes.ValorInvalidoException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -28,14 +31,14 @@ public class TelaComputador {
     public static ControladorTreino controladorTreino;
     public static final String CPF_LOGADO = "000.000.000-00"; 
 
-    // --- PALETA DE CORES (MODERNA) ---
+    // --- PALETA DE CORES ---
     private static final Color COR_FUNDO = new Color(30, 30, 30);
     private static final Color COR_PAINEL_LATERAL = new Color(20, 20, 20);
-    private static final Color COR_DESTAQUE = new Color(74, 255, 86); // Verde Neon
+    private static final Color COR_DESTAQUE = new Color(74, 255, 86);
     private static final Color COR_BOTAO_FUNDO = new Color(50, 50, 50);
     private static final Color COR_TEXTO = new Color(240, 240, 240);
     
-    // Cores específicas da Tabela
+    // Cores da Tabela
     private static final Color COR_TABELA_FUNDO = new Color(45, 45, 45);
     private static final Color COR_TABELA_LINHA = new Color(60, 60, 60);
 
@@ -43,14 +46,14 @@ public class TelaComputador {
     private static final Font FONTE_TITULO = new Font("Segoe UI", Font.BOLD, 32);
     private static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 16);
 
-    // --- Inicialização Estática ---
+    // --- INICIALIZAÇÃO ESTÁTICA ---
     static {
         if (controladorCliente == null) {
             RepositorioClientes repo = new RepositorioClientes();
             controladorCliente = new ControladorCliente(repo);
             controladorTreino = new ControladorTreino(repo);
             
-            // Dados de teste
+            // Garante usuário de teste
             if(controladorCliente.buscarCliente(CPF_LOGADO) == null) {
                 Usuario userTeste = new Usuario("Usuário Teste", 25, 70, 1.75, "teste@email.com", CPF_LOGADO);
                 controladorCliente.cadastrarCliente(userTeste);
@@ -60,7 +63,7 @@ public class TelaComputador {
 
     public TelaComputador() {}
 
-    // --- [PRINCIPAL] Método que retorna o PAINEL do Admin ---
+    // --- PAINEL DO ADMIN ---
     public JPanel criarPainelAdmin() {
         JPanel painelGeral = new JPanel(new GridBagLayout());
         painelGeral.setBackground(COR_FUNDO);
@@ -103,7 +106,7 @@ public class TelaComputador {
         
         painelGeral.add(painelLateral, gbc);
 
-        // BOTÕES DE FUNCIONALIDADES
+        // BOTÕES
         gbc.gridheight = 1; gbc.weightx = 0.35;
         gbc.insets = new Insets(10, 5, 10, 5);
 
@@ -123,12 +126,11 @@ public class TelaComputador {
         painelGeral.add(criarBotaoEstilizado("Relatórios Gerais"), configuracaoGrid(2, 0));
         
         JButton btnPlanos = criarBotaoEstilizado("Planos de Treino");
-        painelGeral.add(btnPlanos, configuracaoGrid(2, 1));
-
         btnPlanos.addActionListener(e -> {
             TelaPlanosPrincipal telaPlanos = new TelaPlanosPrincipal(controladorCliente);
             GerenciadorTelas.getInstance().carregarTela(telaPlanos.criarPainel());
         });
+        painelGeral.add(btnPlanos, configuracaoGrid(2, 1));
 
         JButton btnTreinos = criarBotaoEstilizado("REGISTRAR TREINO");
         btnTreinos.setForeground(Color.BLACK);
@@ -234,10 +236,10 @@ public class TelaComputador {
                 abrirTelaHistorico(usuarioPreDefinido);
             } else {
                 String cpfConsulta = JOptionPane.showInputDialog(tela, "Digite o CPF para ver histórico:");
-                if (cpfConsulta != null) {
+                if (cpfConsulta != null && !cpfConsulta.trim().isEmpty()) {
                     Usuario u = controladorCliente.buscarCliente(cpfConsulta);
                     if (u != null) abrirTelaHistorico(u);
-                    else JOptionPane.showMessageDialog(tela, "Não encontrado.");
+                    else JOptionPane.showMessageDialog(tela, "Usuário não encontrado.");
                 }
             }
         });
@@ -258,7 +260,9 @@ public class TelaComputador {
 
         JTextField campoNome = criarInputEstilizado("Nome do Treino");
         JTextField campoData = criarInputEstilizado("Data (dd/MM/yyyy)");
-        JTextField campoDuracao = criarInputEstilizado("Duração (min)");
+        campoData.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
+        JTextField campoDuracao = criarInputEstilizado("Duração (minutos)");
 
         painelCentral.add(campoNome);
         painelCentral.add(Box.createVerticalStrut(15));
@@ -271,7 +275,7 @@ public class TelaComputador {
         painelDinamico.setLayout(new BoxLayout(painelDinamico, BoxLayout.Y_AXIS));
         painelDinamico.setBackground(COR_FUNDO);
         painelDinamico.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(COR_DESTAQUE), " Detalhes ", 
+            BorderFactory.createLineBorder(COR_DESTAQUE), " Detalhes Específicos ", 
             0, 0, FONTE_BOTAO, COR_DESTAQUE));
         
         painelCentral.add(painelDinamico);
@@ -282,7 +286,7 @@ public class TelaComputador {
 
         JButton btnCorrida = criarBotaoEstilizado("Corrida");
         JButton btnIntervalado = criarBotaoEstilizado("Intervalado");
-        JButton btnFinalizar = criarBotaoEstilizado("SALVAR");
+        JButton btnFinalizar = criarBotaoEstilizado("SALVAR TREINO");
         btnFinalizar.setBackground(COR_DESTAQUE);
         btnFinalizar.setForeground(Color.BLACK);
 
@@ -299,7 +303,7 @@ public class TelaComputador {
         btnCorrida.addActionListener(e -> {
             tipoTreino[0] = "corrida";
             painelDinamico.removeAll();
-            JLabel lbl = new JLabel("Distância (m):"); lbl.setForeground(Color.WHITE);
+            JLabel lbl = new JLabel("Distância (metros):"); lbl.setForeground(Color.WHITE);
             JTextField campo = criarInputEstilizado("0");
             painelDinamico.add(lbl); painelDinamico.add(campo);
             campoDistancia[0] = campo;
@@ -311,7 +315,7 @@ public class TelaComputador {
             painelDinamico.removeAll();
             JLabel lbl1 = new JLabel("Séries:"); lbl1.setForeground(Color.WHITE);
             JTextField c1 = criarInputEstilizado("0");
-            JLabel lbl2 = new JLabel("Descanso (s):"); lbl2.setForeground(Color.WHITE);
+            JLabel lbl2 = new JLabel("Descanso (segundos):"); lbl2.setForeground(Color.WHITE);
             JTextField c2 = criarInputEstilizado("0");
             painelDinamico.add(lbl1); painelDinamico.add(c1);
             painelDinamico.add(Box.createVerticalStrut(10));
@@ -321,43 +325,65 @@ public class TelaComputador {
         });
 
         JTextField finalCampoCpf = campoCpf;
+        
+        // --- LÓGICA DE SALVAR COM TRATAMENTO DE ERROS ---
         btnFinalizar.addActionListener(e -> {
             try {
                 String cpfAlvo;
                 if (usuarioPreDefinido != null) {
                     cpfAlvo = usuarioPreDefinido.getCpf();
                 } else {
-                    if(finalCampoCpf.getText().isEmpty()) {
-                        JOptionPane.showMessageDialog(tela, "Digite o CPF."); return;
+                    if (finalCampoCpf.getText().trim().isEmpty()) {
+                        throw new CampoVazioException("CPF do Aluno");
                     }
                     cpfAlvo = finalCampoCpf.getText();
-                    if (controladorCliente.buscarCliente(cpfAlvo) == null) {
-                        JOptionPane.showMessageDialog(tela, "Cliente não encontrado."); return;
+                }
+
+                if (campoNome.getText().trim().isEmpty()) throw new CampoVazioException("Nome do Treino");
+                if (tipoTreino[0] == null) throw new ValorInvalidoException("Selecione o tipo de treino!");
+
+                LocalDate data;
+                try {
+                    data = LocalDate.parse(campoData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                } catch (DateTimeParseException dt) {
+                    throw new ValorInvalidoException("Data inválida. Use o formato dd/MM/yyyy.");
+                }
+
+                int duracao;
+                double dist = 0;
+                int ser = 0, desc = 0;
+
+                try {
+                    duracao = Integer.parseInt(campoDuracao.getText()) * 60; 
+                    
+                    if (tipoTreino[0].equals("corrida")) {
+                        if (campoDistancia[0] == null) throw new ValorInvalidoException("Defina a distância.");
+                        dist = Double.parseDouble(campoDistancia[0].getText().replace(",", "."));
+                    } else {
+                        if (campoSeries[0] == null) throw new ValorInvalidoException("Defina séries e descanso.");
+                        ser = Integer.parseInt(campoSeries[0].getText());
+                        desc = Integer.parseInt(campoDescanso[0].getText());
                     }
+                } catch (NumberFormatException nf) {
+                    throw new ValorInvalidoException("Verifique os campos numéricos.");
                 }
 
-                String nome = campoNome.getText();
-                LocalDate data = LocalDate.parse(campoData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                int duracao = Integer.parseInt(campoDuracao.getText()) * 60;
-                
-                if (tipoTreino[0] == null) { JOptionPane.showMessageDialog(tela, "Selecione o tipo!"); return; }
+                controladorTreino.cadastrarTreino(cpfAlvo, 
+                    tipoTreino[0].equals("corrida") ? "Corrida" : "Intervalado", 
+                    data, duracao, campoNome.getText(), dist, ser, desc);
 
-                if (tipoTreino[0].equals("corrida")) {
-                    double dist = Double.parseDouble(campoDistancia[0].getText());
-                    controladorTreino.cadastrarTreino(cpfAlvo, "Corrida", data, duracao, nome, dist, 0, 0);
-                } else {
-                    int ser = Integer.parseInt(campoSeries[0].getText());
-                    int desc = Integer.parseInt(campoDescanso[0].getText());
-                    controladorTreino.cadastrarTreino(cpfAlvo, "Intervalado", data, duracao, nome, 0, ser, desc);
-                }
-                JOptionPane.showMessageDialog(tela, "Salvo!");
+                JOptionPane.showMessageDialog(tela, "Treino registrado com sucesso!");
                 tela.dispose();
+
+            } catch (CampoVazioException | ValorInvalidoException | UsuarioNaoEncontradoException ex) {
+                JOptionPane.showMessageDialog(tela, "Atenção: " + ex.getMessage(), "Validação", JOptionPane.WARNING_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage());
+                JOptionPane.showMessageDialog(tela, "Erro inesperado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             }
         });
 
-        tela.setSize(500, 650);
+        tela.setSize(500, 700);
         tela.setLocationRelativeTo(null);
         tela.setVisible(true);
     }
@@ -368,7 +394,7 @@ public class TelaComputador {
             u = SessaoUsuario.getInstance().getUsuarioLogado();
         } else {
             String cpf = JOptionPane.showInputDialog(null, "CPF do aluno:");
-            if (cpf != null) u = controladorCliente.buscarCliente(cpf);
+            if (cpf != null && !cpf.trim().isEmpty()) u = controladorCliente.buscarCliente(cpf);
         }
 
         if (u == null) { JOptionPane.showMessageDialog(null, "Não encontrado."); return; }
@@ -399,7 +425,6 @@ public class TelaComputador {
         tela.setVisible(true);
     }
 
-    // --- [CORREÇÃO] TELA DE HISTÓRICO MODERNA RESTAURADA ---
     public static void abrirTelaHistorico(Usuario u) {
         if (u == null) return;
 
@@ -407,14 +432,12 @@ public class TelaComputador {
         tela.getContentPane().setBackground(COR_FUNDO);
         tela.setLayout(new BorderLayout());
 
-        // Título Estilizado
         JLabel lblTitulo = new JLabel("Histórico de Atividades", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitulo.setForeground(COR_DESTAQUE);
         lblTitulo.setBorder(new EmptyBorder(20, 0, 20, 0));
         tela.add(lblTitulo, BorderLayout.NORTH);
 
-        // Modelo da Tabela
         String[] colunas = {"Data", "Treino", "Tipo", "Duração", "Detalhes", "Kcal"};
         javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(colunas, 0) {
             @Override
@@ -444,29 +467,24 @@ public class TelaComputador {
             model.addRow(new Object[]{data, nome, tipo, duracao, detalhes, calorias});
         }
 
-        // --- ESTILIZAÇÃO AVANÇADA DA TABELA ---
         JTable tabela = new JTable(model);
         tabela.setBackground(COR_TABELA_FUNDO);
         tabela.setForeground(Color.WHITE);
         tabela.setGridColor(COR_TABELA_LINHA);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tabela.setRowHeight(30); // Linhas mais altas
+        tabela.setRowHeight(30); 
         tabela.setFillsViewportHeight(true);
         tabela.setSelectionBackground(COR_DESTAQUE);
         tabela.setSelectionForeground(Color.BLACK);
-
-        // Remove bordas
         tabela.setShowVerticalLines(false);
         tabela.setIntercellSpacing(new Dimension(0, 1));
 
-        // Cabeçalho da Tabela
         JTableHeader header = tabela.getTableHeader();
         header.setBackground(COR_PAINEL_LATERAL);
         header.setForeground(COR_DESTAQUE);
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, COR_DESTAQUE));
         
-        // Renderizador para centralizar texto
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         for(int i=0; i<tabela.getColumnCount(); i++) {
@@ -474,12 +492,11 @@ public class TelaComputador {
         }
 
         JScrollPane scroll = new JScrollPane(tabela);
-        scroll.getViewport().setBackground(COR_FUNDO); // Fundo escuro atrás da tabela
+        scroll.getViewport().setBackground(COR_FUNDO); 
         scroll.setBorder(new EmptyBorder(10, 20, 20, 20)); 
         
         tela.add(scroll, BorderLayout.CENTER);
 
-        // Botão Fechar
         JButton btnFechar = criarBotaoEstilizado("FECHAR");
         btnFechar.addActionListener(e -> tela.dispose());
         JPanel painelBotao = new JPanel();
