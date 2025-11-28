@@ -10,7 +10,6 @@ import br.com.excecoes.UsuarioNaoEncontradoException;
 import br.com.excecoes.ValorInvalidoException;
 import br.com.negocio.treinos.Corrida;
 import br.com.negocio.treinos.Intervalado;
-import br.com.negocio.treinos.Meta;
 import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.TreinoProgresso;
 import br.com.negocio.treinos.Usuario;

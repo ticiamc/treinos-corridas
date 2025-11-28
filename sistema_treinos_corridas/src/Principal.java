@@ -1,19 +1,3 @@
-import br.com.dados.IRepositorioCliente;
-import br.com.dados.IRepositorioDesafio;
-import br.com.dados.RepositorioClientes;
-import br.com.dados.RepositorioDesafio;
-import br.com.negocio.ControladorCliente;
-import br.com.negocio.ControladorDesafio;
-import br.com.negocio.ControladorMeta;
-import br.com.negocio.ControladorPlanoTreino;
-import br.com.negocio.ControladorTreino;
-import br.com.negocio.treinos.*; // Importa todas as classes
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Scanner;
-
 public class Principal {
     /*
     public static void main(String[] args) {

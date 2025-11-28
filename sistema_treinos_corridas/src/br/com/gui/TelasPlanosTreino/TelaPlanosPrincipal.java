@@ -16,7 +16,6 @@ public class TelaPlanosPrincipal {
 
     public JPanel criarPainel() {
         Color corFundo = new Color(30, 30, 30);
-        Color corCard = new Color(45, 45, 45);
         Color corDestaque = new Color(74, 255, 86);
 
         JPanel painel = new JPanel(new BorderLayout());

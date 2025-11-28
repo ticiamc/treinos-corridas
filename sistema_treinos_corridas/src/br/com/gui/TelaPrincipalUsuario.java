@@ -38,7 +38,6 @@ public class TelaPrincipalUsuario {
 
         // Botões do Menu
         adicionarBotaoMenu(menuLateral, "Registrar Treino", e -> {
-            // Chama a tela de cadastro SEM pedir CPF (pois usa a sessão)
             TelaComputador.abrirTelaCadastroTreinoUsuarioLogado();
         });
         
@@ -58,10 +57,12 @@ public class TelaPrincipalUsuario {
 
         menuLateral.add(Box.createVerticalStrut(10));
 
-        adicionarBotaoMenu(menuLateral, "Meu Perfil", e -> TelaPerfilUsuario());
-        
-
-
+        // --- CORREÇÃO AQUI ---
+        // Antes estava: e -> TelaPerfilUsuario()
+        // Correção: new TelaPerfilUsuario(...)
+        adicionarBotaoMenu(menuLateral, "Meu Perfil", e -> {
+            new TelaPerfilUsuario(TelaComputador.controladorCliente);
+        });
 
         // Espaço elástico para empurrar o Sair para baixo
         menuLateral.add(Box.createVerticalGlue());
@@ -74,7 +75,6 @@ public class TelaPrincipalUsuario {
         btnSair.setMaximumSize(new Dimension(180, 40));
         btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
-            // Volta para a tela de Login usando o gerenciador
             GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
         menuLateral.add(btnSair);
