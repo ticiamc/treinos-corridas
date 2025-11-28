@@ -16,7 +16,6 @@ public class TelaPrincipalUsuario {
         JPanel painel = new JPanel(new BorderLayout());
         painel.setBackground(new Color(30,30,30));
 
-        // --- MENU LATERAL ---
         JPanel menu = new JPanel();
         menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
         menu.setBackground(new Color(20,20,20));
@@ -29,18 +28,16 @@ public class TelaPrincipalUsuario {
         menu.add(lbl);
         menu.add(Box.createVerticalStrut(20));
 
-        // --- BOTÕES DE NAVEGAÇÃO ---
-        
-        // 1. Botão MEU PERFIL (Adicionado agora)
         adicionarBotao(menu, "Meu Perfil", e -> new TelaPerfilUsuario());
         menu.add(Box.createVerticalStrut(10));
 
-        // 2. Outros Botões
-        adicionarBotao(menu, "Registrar Treino", e -> TelaComputador.abrirTelaCadastroTreinoUsuarioLogado());
+        adicionarBotao(menu, "Registrar Treino", e -> TelaComputador.abrirTelaCadastroTreinoUsuarioLogado(() -> {
+            GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario());
+        }));
         menu.add(Box.createVerticalStrut(10));
         
-        adicionarBotao(menu, "Relatórios/Exportar", e -> {
-            if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(logado).criarPainel());
+        adicionarBotao(menu, "Meu Histórico", e -> {
+            if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaHistoricoTreinos(logado).criarPainel());
         });
         menu.add(Box.createVerticalStrut(10));
         
@@ -57,7 +54,6 @@ public class TelaPrincipalUsuario {
         
         adicionarBotao(menu, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
 
-        // Espaço elástico e botão Sair
         menu.add(Box.createVerticalGlue());
         JButton sair = new JButton("Sair");
         sair.setBackground(Color.RED);
@@ -70,7 +66,6 @@ public class TelaPrincipalUsuario {
 
         painel.add(menu, BorderLayout.WEST);
         
-        // --- ÁREA CENTRAL (Dashboard) ---
         JPanel centro = new JPanel(new BorderLayout());
         centro.setBackground(new Color(30,30,30));
         

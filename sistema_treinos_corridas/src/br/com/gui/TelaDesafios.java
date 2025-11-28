@@ -9,6 +9,7 @@ import br.com.negocio.treinos.Usuario;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class TelaDesafios {
@@ -25,7 +26,6 @@ public class TelaDesafios {
         JPanel painel = new JPanel(new BorderLayout());
         painel.setBackground(new Color(30,30,30));
         
-        // Cabeçalho com Título e Botão Criar
         JPanel topo = new JPanel(new BorderLayout());
         topo.setBackground(new Color(30,30,30));
         
@@ -35,7 +35,6 @@ public class TelaDesafios {
         titulo.setBorder(BorderFactory.createEmptyBorder(10,0,10,0));
         topo.add(titulo, BorderLayout.CENTER);
 
-        // Botão Criar (Disponível para usuários logados)
         if (usuarioLogado != null) {
             JButton btnCriar = new JButton("+ Criar Novo");
             btnCriar.setBackground(new Color(74, 255, 86));
@@ -45,7 +44,6 @@ public class TelaDesafios {
         }
         painel.add(topo, BorderLayout.NORTH);
         
-        // Abas
         JTabbedPane abas = new JTabbedPane();
         abas.addTab("Todos os Desafios", criarPainelLista(false));
         if(usuarioLogado != null) {
@@ -85,15 +83,25 @@ public class TelaDesafios {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Desafio d = (Desafio) value;
                 String criador = (d.getCriador() == null) ? "Admin" : d.getCriador().getNome();
-                String txt = String.format("ID %d: %s | %s - %s | Criador: %s", 
-                    d.getIdDesafio(), d.getNome(), d.getDataInicio(), d.getDataFim(), criador);
-                return super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
+                
+                boolean encerrado = LocalDate.now().isAfter(d.getDataFim());
+                String status = encerrado ? "[ENCERRADO] " : "[ATIVO] ";
+                
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                String txt = String.format("%s %s | %s a %s | Criador: %s", 
+                    status, d.getNome(), 
+                    d.getDataInicio().format(fmt), 
+                    d.getDataFim().format(fmt), 
+                    criador);
+                    
+                Component c = super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
+                if (encerrado) setForeground(Color.GRAY);
+                return c;
             }
         });
         
         p.add(new JScrollPane(jList), BorderLayout.CENTER);
         
-        // Painel de Botões de Ação
         JPanel botoes = new JPanel();
         
         if(!apenasMeus) {
@@ -101,9 +109,15 @@ public class TelaDesafios {
             btnEntrar.addActionListener(e -> {
                 Desafio sel = jList.getSelectedValue();
                 if(sel != null) {
+                    if (LocalDate.now().isAfter(sel.getDataFim())) {
+                        JOptionPane.showMessageDialog(p, "Este desafio já foi encerrado!");
+                        return;
+                    }
                     try {
                         controladorDesafio.participarDesafio(sel.getIdDesafio(), usuarioLogado.getCpf());
                         JOptionPane.showMessageDialog(p, "Você entrou no desafio!");
+                        // RECARREGAR TELA
+                        GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel());
                     } catch(Exception ex) { JOptionPane.showMessageDialog(p, ex.getMessage()); }
                 }
             });
@@ -117,7 +131,6 @@ public class TelaDesafios {
         });
         botoes.add(btnRanking);
 
-        // Botão EDITAR (Só aparece se o usuário for o dono do desafio)
         JButton btnEditar = new JButton("Editar (Dono)");
         btnEditar.setBackground(new Color(255, 200, 0));
         btnEditar.addActionListener(e -> {
@@ -126,7 +139,6 @@ public class TelaDesafios {
                 JOptionPane.showMessageDialog(p, "Selecione um desafio.");
                 return;
             }
-            // Verifica permissão
             boolean isDono = sel.getCriador() != null && sel.getCriador().getCpf().equals(usuarioLogado.getCpf());
             
             if (isDono) {
@@ -137,7 +149,6 @@ public class TelaDesafios {
         });
         botoes.add(btnEditar);
 
-        // Botão EXCLUIR (Dono)
         JButton btnExcluir = new JButton("Excluir");
         btnExcluir.setBackground(new Color(180, 50, 50));
         btnExcluir.setForeground(Color.WHITE);
@@ -162,7 +173,6 @@ public class TelaDesafios {
         return p;
     }
     
-    // Dialogo de Criação
     public static void abrirDialogoCriarDesafio() {
         JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Criar Desafio", true);
         d.setLayout(new GridLayout(5,2));
@@ -182,9 +192,7 @@ public class TelaDesafios {
         JButton btn = new JButton("Criar");
         btn.addActionListener(e -> {
             try {
-                // Pega usuário logado (pode ser null se for Admin logado como 'admin')
                 Usuario criador = SessaoUsuario.getInstance().getUsuarioLogado();
-                
                 TelaComputador.controladorDesafio.cadastrarDesafio(
                     nome.getText(), desc.getText(), 
                     LocalDate.parse(ini.getText()), LocalDate.parse(fim.getText()),
@@ -192,13 +200,14 @@ public class TelaDesafios {
                 );
                 JOptionPane.showMessageDialog(d, "Desafio criado!");
                 d.dispose();
+                // RECARREGAR TELA
+                GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel());
             } catch(Exception ex) { JOptionPane.showMessageDialog(d, "Erro: " + ex.getMessage()); }
         });
         d.add(btn);
         d.setVisible(true);
     }
 
-    // Dialogo de Edição
     private void abrirDialogoEditarDesafio(Desafio desafio) {
         JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Editar Desafio", true);
         d.setLayout(new GridLayout(5,2));
@@ -225,10 +234,7 @@ public class TelaDesafios {
                 );
                 JOptionPane.showMessageDialog(d, "Atualizado com sucesso!");
                 d.dispose();
-                
-                // Recarrega a tela atual para refletir as mudanças na lista
                 GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel());
-                
             } catch(Exception ex) { JOptionPane.showMessageDialog(d, "Erro: " + ex.getMessage()); }
         });
         d.add(btn);

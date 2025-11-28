@@ -9,12 +9,12 @@ public class TelaPerfilUsuario extends JFrame {
     private JButton botaoBuscar, botaoSalvar;
     private Usuario usuarioAtual;
 
-    // Construtor padrão (Busca manual)
+    // Construtor padrão
     public TelaPerfilUsuario() {
         initUI();
     }
 
-    // Construtor para Admin (Abre direto no usuário)
+    // Construtor para Admin (Edição direta)
     public TelaPerfilUsuario(Usuario usuarioAlvo) {
         initUI();
         this.usuarioAtual = usuarioAlvo;

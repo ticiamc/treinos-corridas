@@ -3,7 +3,6 @@ package br.com.gui;
 import br.com.dados.RepositorioClientes;
 import br.com.dados.RepositorioDesafio;
 import br.com.dados.RepositorioPlanoTreino;
-import br.com.gui.TelasPlanosTreino.TelaPlanosPrincipal;
 import br.com.negocio.*;
 import br.com.negocio.treinos.*;
 import br.com.excecoes.*;
@@ -77,27 +76,22 @@ public class TelaComputador {
         lateral.add(btnSair);
         painelGeral.add(lateral, BorderLayout.WEST);
         
-        // GRID DE BOTÕES DO ADMIN
-        JPanel grid = new JPanel(new GridLayout(3, 2, 10, 10)); // Ajustado layout
+        JPanel grid = new JPanel(new GridLayout(3, 2, 10, 10));
         grid.setBackground(COR_FUNDO);
         grid.setBorder(new EmptyBorder(20,20,20,20));
         
-        // Botão 1: Cadastrar Novo Usuário
         JButton btnCadUser = criarBotaoEstilizado("Cadastrar Usuário");
         btnCadUser.addActionListener(e -> abrirTelaCadastroUsuario());
         
-        // Botão 2: Gerenciar Usuários (Listar/Editar) - NOVO
         JButton btnGerenciarUsers = criarBotaoEstilizado("Gerenciar Usuários");
         btnGerenciarUsers.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarUsuarios().criarPainel()));
 
-        // Botão 3: Gerenciar Desafios (Detalhes/Ganhadores/Editar) - NOVO
         JButton btnGerenciarDesafios = criarBotaoEstilizado("Gerenciar Desafios");
         btnGerenciarDesafios.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarDesafios().criarPainel()));
         
         grid.add(btnCadUser);
         grid.add(btnGerenciarUsers);
         grid.add(btnGerenciarDesafios);
-        
         painelGeral.add(grid, BorderLayout.CENTER);
         return painelGeral;
     }
@@ -134,13 +128,19 @@ public class TelaComputador {
         tela.setVisible(true);
     }
     
-    public static void abrirTelaCadastroTreinoUsuarioLogado() {
+    // Método sobrecarregado para aceitar callback de atualização
+    public static void abrirTelaCadastroTreinoUsuarioLogado(Runnable onSucesso) {
         Usuario logado = SessaoUsuario.getInstance().getUsuarioLogado();
-        if (logado != null) abrirJanelaTreinoBase(logado);
+        if (logado != null) abrirJanelaTreinoBase(logado, onSucesso);
         else JOptionPane.showMessageDialog(null, "Erro: Nenhum usuário logado.");
     }
 
-    private static void abrirJanelaTreinoBase(Usuario usuarioPreDefinido) {
+    // Método antigo para manter compatibilidade (chama o novo com null)
+    public static void abrirTelaCadastroTreinoUsuarioLogado() {
+        abrirTelaCadastroTreinoUsuarioLogado(null);
+    }
+
+    private static void abrirJanelaTreinoBase(Usuario usuarioPreDefinido, Runnable onSucesso) {
         JFrame tela = new JFrame("Registrar Treino");
         tela.getContentPane().setBackground(COR_FUNDO);
         tela.setLayout(new BorderLayout());
@@ -231,6 +231,12 @@ public class TelaComputador {
                 }
                 JOptionPane.showMessageDialog(tela, "Registrado!");
                 tela.dispose();
+                
+                // EXECUTA O CALLBACK DE ATUALIZAÇÃO (SE HOUVER)
+                if (onSucesso != null) {
+                    onSucesso.run();
+                }
+                
             } catch (Exception ex) { JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage()); }
         });
         tela.setSize(500, 700);
@@ -251,6 +257,10 @@ public class TelaComputador {
         tela.add(btnLimpar, BorderLayout.SOUTH);
         tela.setSize(400,300);
         tela.setVisible(true);
+    }
+
+    public static void abrirTelaHistorico(Usuario u) {
+        GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(u).criarPainel());
     }
 
     public static void TelaMetas() { GerenciadorTelas.getInstance().carregarTela(new TelaMetas().criarPainel()); }
