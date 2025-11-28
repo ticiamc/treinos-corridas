@@ -16,6 +16,7 @@ public class TelaPrincipalUsuario {
         JPanel painel = new JPanel(new BorderLayout());
         painel.setBackground(new Color(30,30,30));
 
+        // --- MENU LATERAL ---
         JPanel menu = new JPanel();
         menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
         menu.setBackground(new Color(20,20,20));
@@ -28,32 +29,48 @@ public class TelaPrincipalUsuario {
         menu.add(lbl);
         menu.add(Box.createVerticalStrut(20));
 
+        // --- BOTÕES DE NAVEGAÇÃO ---
+        
+        // 1. Botão MEU PERFIL (Adicionado agora)
+        adicionarBotao(menu, "Meu Perfil", e -> new TelaPerfilUsuario());
+        menu.add(Box.createVerticalStrut(10));
+
+        // 2. Outros Botões
         adicionarBotao(menu, "Registrar Treino", e -> TelaComputador.abrirTelaCadastroTreinoUsuarioLogado());
         menu.add(Box.createVerticalStrut(10));
+        
         adicionarBotao(menu, "Relatórios/Exportar", e -> {
             if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(logado).criarPainel());
         });
         menu.add(Box.createVerticalStrut(10));
+        
         adicionarBotao(menu, "Minhas Metas", e -> TelaComputador.TelaMetas());
         menu.add(Box.createVerticalStrut(10));
+        
         adicionarBotao(menu, "Desafios", e -> TelaComputador.TelaDesafios());
         menu.add(Box.createVerticalStrut(10));
+        
         adicionarBotao(menu, "Planos de Treino", e -> {
              GerenciadorTelas.getInstance().carregarTela(new br.com.gui.TelasPlanosTreino.TelaPlanosPrincipal(TelaComputador.controladorCliente).criarPainel());
         });
         menu.add(Box.createVerticalStrut(10));
+        
         adicionarBotao(menu, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
 
+        // Espaço elástico e botão Sair
         menu.add(Box.createVerticalGlue());
         JButton sair = new JButton("Sair");
         sair.setBackground(Color.RED);
+        sair.setForeground(Color.WHITE);
         sair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
             GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
         menu.add(sair);
+
         painel.add(menu, BorderLayout.WEST);
         
+        // --- ÁREA CENTRAL (Dashboard) ---
         JPanel centro = new JPanel(new BorderLayout());
         centro.setBackground(new Color(30,30,30));
         
