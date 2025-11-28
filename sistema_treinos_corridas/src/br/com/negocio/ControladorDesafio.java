@@ -17,10 +17,25 @@ public class ControladorDesafio {
         this.repositorioCliente = repositorioCliente;
     }
 
-    public void cadastrarDesafio(String nome, String descricao, LocalDate dataInicio, LocalDate dataFim) throws Exception {
+    // Atualizado para receber o criador
+    public void cadastrarDesafio(String nome, String descricao, LocalDate dataInicio, LocalDate dataFim, Usuario criador) throws Exception {
         if (dataInicio.isAfter(dataFim)) throw new Exception("Data de início não pode ser posterior à data final.");
-        Desafio desafio = new Desafio(nome, descricao, dataInicio, dataFim);
+        Desafio desafio = new Desafio(nome, descricao, dataInicio, dataFim, criador);
         repositorioDesafio.cadastrar(desafio);
+    }
+
+    // Novo método para editar desafio existente
+    public void atualizarDesafio(int idDesafio, String nome, String descricao, LocalDate inicio, LocalDate fim) throws Exception {
+        Desafio d = repositorioDesafio.buscar(idDesafio);
+        if (d == null) throw new Exception("Desafio não encontrado.");
+        if (inicio.isAfter(fim)) throw new Exception("Data de início inválida.");
+        
+        d.setNome(nome);
+        d.setDescricao(descricao);
+        d.setDataInicio(inicio);
+        d.setDataFim(fim);
+        
+        repositorioDesafio.atualizar(d);
     }
 
     public List<Desafio> listarDesafios() { return repositorioDesafio.listarTodos(); }
@@ -40,7 +55,6 @@ public class ControladorDesafio {
         repositorioDesafio.atualizar(desafio);
     }
     
-    // Método adicionado para justificar o import e completar o CRUD
     public void registrarProgresso(int idDesafio, String cpfUsuario, double progresso) throws Exception {
         Desafio desafio = repositorioDesafio.buscar(idDesafio);
         if (desafio == null) throw new Exception("Desafio não encontrado.");
