@@ -455,8 +455,10 @@ public class TelaComputador {
             
             String detalhes = "-";
             if (t instanceof br.com.negocio.treinos.Corrida) {
-                double km = ((br.com.negocio.treinos.Corrida) t).getDistanciaEmMetros() / 1000.0;
-                detalhes = String.format("%.2f km", km);
+                br.com.negocio.treinos.Corrida c = (br.com.negocio.treinos.Corrida) t;
+                double km = c.getDistanciaEmMetros() / 1000.0;
+                double velMedia = c.calcularVelocidadeMediaKmPorHora();
+                detalhes = String.format("%.2f km (%.2f km/h)", km, velMedia);
             } else if (t instanceof br.com.negocio.treinos.Intervalado) {
                 br.com.negocio.treinos.Intervalado i = (br.com.negocio.treinos.Intervalado) t;
                 detalhes = i.getSeries() + " séries / " + i.getDescansoEntreSeriesSeg() + "s";
