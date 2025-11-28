@@ -56,9 +56,11 @@ public class TelaPrincipalUsuario {
 
         adicionarBotaoMenu(menuLateral, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
 
-        adicionarBotaoMenu(menuLateral, "Meu Perfil", e -> {
-            GerenciadorTelas.getInstance().carregarTela(new TelaPerfilUsuario().criarPainelPerfil());
-        });
+        menuLateral.add(Box.createVerticalStrut(10));
+
+        adicionarBotaoMenu(menuLateral, "Meu Perfil", e -> TelaPerfilUsuario());
+        
+
 
 
         // Espaço elástico para empurrar o Sair para baixo

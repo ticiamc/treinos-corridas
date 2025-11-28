@@ -22,7 +22,7 @@ public class TelaPerfilUsuario extends JFrame {
     private JButton botaoBuscar;
     private JButton botaoSalvar;
 
-    private Usuario usuarioAtual; // armazenará o usuário encontrado
+    private Usuario usuarioAtual; // armazena o usuário encontrado
 
     public TelaPerfilUsuario(ControladorCliente controlador) {
         this.controlador = controlador;

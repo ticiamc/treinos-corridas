@@ -1,6 +1,7 @@
 package br.com.gui;
 
 import br.com.dados.RepositorioClientes;
+import br.com.gui.TelasPlanosTreino.TelaPlanosPrincipal;
 import br.com.negocio.ControladorCliente;
 import br.com.negocio.ControladorTreino;
 import br.com.negocio.SessaoUsuario;
@@ -120,8 +121,15 @@ public class TelaComputador {
 
         gbc.gridx = 2;
         painelGeral.add(criarBotaoEstilizado("Relatórios Gerais"), configuracaoGrid(2, 0));
-        painelGeral.add(criarBotaoEstilizado("Planos de Treino"), configuracaoGrid(2, 1));
         
+        JButton btnPlanos = criarBotaoEstilizado("Planos de Treino");
+        painelGeral.add(btnPlanos, configuracaoGrid(2, 1));
+
+        btnPlanos.addActionListener(e -> {
+            TelaPlanosPrincipal telaPlanos = new TelaPlanosPrincipal(controladorCliente);
+            GerenciadorTelas.getInstance().carregarTela(telaPlanos.criarPainel());
+        });
+
         JButton btnTreinos = criarBotaoEstilizado("REGISTRAR TREINO");
         btnTreinos.setForeground(Color.BLACK);
         btnTreinos.setBackground(COR_DESTAQUE); 
