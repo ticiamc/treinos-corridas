@@ -9,7 +9,23 @@ public class TelaPerfilUsuario extends JFrame {
     private JButton botaoBuscar, botaoSalvar;
     private Usuario usuarioAtual;
 
+    // Construtor padrão (Busca manual)
     public TelaPerfilUsuario() {
+        initUI();
+    }
+
+    // Construtor para Admin (Abre direto no usuário)
+    public TelaPerfilUsuario(Usuario usuarioAlvo) {
+        initUI();
+        this.usuarioAtual = usuarioAlvo;
+        carregarUsuarioNosCampos();
+        // Desativa busca pois já estamos editando um específico
+        campoCpfBusca.setText(usuarioAlvo.getCpf());
+        campoCpfBusca.setEditable(false);
+        botaoBuscar.setEnabled(false);
+    }
+
+    private void initUI() {
         setTitle("Perfil do Usuário");
         setSize(400, 400);
         setLocationRelativeTo(null);
@@ -36,7 +52,6 @@ public class TelaPerfilUsuario extends JFrame {
         add(botaoSalvar, BorderLayout.SOUTH);
 
         botaoBuscar.addActionListener(e -> {
-            // Usa o controlador estático global para evitar warning de campo não usado
             usuarioAtual = TelaComputador.controladorCliente.buscarCliente(campoCpfBusca.getText().trim());
             if (usuarioAtual == null) JOptionPane.showMessageDialog(this, "Usuário não encontrado.");
             else carregarUsuarioNosCampos();

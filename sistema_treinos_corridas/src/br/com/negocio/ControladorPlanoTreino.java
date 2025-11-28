@@ -2,12 +2,13 @@ package br.com.negocio;
 
 import br.com.dados.IRepositorioCliente;
 import br.com.dados.IRepositorioPlanoTreino;
-import br.com.excecoes.CampoVazioException; 
+import br.com.excecoes.CampoVazioException;
 import br.com.negocio.treinos.PlanoTreino;
 import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.Usuario;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class ControladorPlanoTreino {
@@ -21,11 +22,9 @@ public class ControladorPlanoTreino {
     }
 
     public void cadastrarPlano(String cpfUsuario, String nome, LocalDate dataInicio, LocalDate dataFim) throws Exception {
-        // --- VALIDAÇÃO DE NOME ---
         if (nome == null || nome.trim().isEmpty()) {
             throw new CampoVazioException("Nome do Plano");
         }
-        // --------------------------------
 
         Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario);
         if (usuario == null) throw new Exception("Cliente não encontrado.");
@@ -67,6 +66,15 @@ public class ControladorPlanoTreino {
 
         Treino treino = usuario.buscarTreinoPorId(idTreino);
         if (treino == null) throw new Exception("Treino não encontrado na lista do usuário.");
+
+        // --- VALIDAÇÃO DE DATA (NOVO) ---
+        LocalDate dataTreino = treino.getDataExecucao().toLocalDate();
+        if (dataTreino.isBefore(plano.getDataInicio()) || dataTreino.isAfter(plano.getDataFim())) {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            throw new Exception("A data do treino (" + dataTreino.format(fmt) + ") está fora da vigência do plano (" + 
+                plano.getDataInicio().format(fmt) + " a " + plano.getDataFim().format(fmt) + ").");
+        }
+        // --------------------------------
 
         plano.adicionarTreino(treino);
         repositorioCliente.atualizarElemento(usuario);

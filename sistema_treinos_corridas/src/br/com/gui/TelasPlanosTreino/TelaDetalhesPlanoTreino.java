@@ -41,7 +41,6 @@ public class TelaDetalhesPlanoTreino {
         JPanel centro = new JPanel(new BorderLayout());
         centro.setBackground(corCard);
         
-        // Lista de Treinos do Plano
         DefaultListModel<String> model = new DefaultListModel<>();
         for (Treino t : plano.getTreinosDoPlano()) {
             model.addElement(t.toString());
@@ -51,12 +50,11 @@ public class TelaDetalhesPlanoTreino {
         listaTreinos.setForeground(Color.WHITE);
         centro.add(new JScrollPane(listaTreinos), BorderLayout.CENTER);
 
-        // Painel de Ações
         JPanel painelAdd = new JPanel(new GridLayout(2, 1, 5, 5));
         painelAdd.setBackground(corFundo);
         painelAdd.setBorder(new EmptyBorder(10,0,0,0));
 
-        // --- 1. Adicionar Treino Existente ---
+        // --- Adicionar Treino Existente ---
         JPanel pnlExistente = new JPanel(new FlowLayout(FlowLayout.LEFT));
         pnlExistente.setBackground(corCard);
         JComboBox<String> cbTreinos = new JComboBox<>();
@@ -68,6 +66,13 @@ public class TelaDetalhesPlanoTreino {
             int idx = cbTreinos.getSelectedIndex();
             if (idx >= 0) {
                 Treino escolhido = disponiveis.get(idx);
+                // --- VALIDAÇÃO DE DATA NA GUI ---
+                LocalDate dTreino = escolhido.getDataExecucao().toLocalDate();
+                if (dTreino.isBefore(plano.getDataInicio()) || dTreino.isAfter(plano.getDataFim())) {
+                    JOptionPane.showMessageDialog(painel, "Erro: A data deste treino (" + dTreino + ") está fora do período do plano.");
+                    return;
+                }
+                // --------------------------------
                 plano.adicionarTreino(escolhido);
                 model.addElement(escolhido.toString());
                 controladorCliente.atualizarCliente(plano.getUsuarioAlvo());
@@ -77,7 +82,6 @@ public class TelaDetalhesPlanoTreino {
         pnlExistente.add(cbTreinos);
         pnlExistente.add(btnAddExistente);
         
-        // --- 2. Registrar NOVO Treino (Conta para Metas/Desafios) ---
         JButton btnNovoTreino = new JButton("Registrar NOVO Treino neste Plano");
         btnNovoTreino.setBackground(corDestaque);
         btnNovoTreino.setForeground(Color.BLACK);
@@ -90,7 +94,6 @@ public class TelaDetalhesPlanoTreino {
         centro.add(painelAdd, BorderLayout.SOUTH);
         painel.add(centro, BorderLayout.CENTER);
 
-        // Botão Voltar
         JButton btnVoltar = new JButton("Voltar");
         btnVoltar.setBackground(new Color(60,60,60));
         btnVoltar.setForeground(Color.WHITE);
@@ -108,11 +111,17 @@ public class TelaDetalhesPlanoTreino {
         d.setLocationRelativeTo(parent);
 
         JTextField txtNome = new JTextField("Treino do Plano");
-        JTextField txtData = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        // Sugere a data de INÍCIO do plano se hoje estiver fora
+        LocalDate sugestaoData = LocalDate.now();
+        if (sugestaoData.isBefore(plano.getDataInicio()) || sugestaoData.isAfter(plano.getDataFim())) {
+            sugestaoData = plano.getDataInicio();
+        }
+        JTextField txtData = new JTextField(sugestaoData.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
         JTextField txtDuracao = new JTextField("60");
         String[] tipos = {"Corrida", "Intervalado"};
         JComboBox<String> cbTipo = new JComboBox<>(tipos);
-        JTextField txtExtra = new JTextField(); // Distancia ou Series
+        JTextField txtExtra = new JTextField(); 
         JLabel lblExtra = new JLabel("Distância (m):");
 
         cbTipo.addActionListener(e -> {
@@ -132,10 +141,17 @@ public class TelaDetalhesPlanoTreino {
                 Usuario u = plano.getUsuarioAlvo();
                 String nome = txtNome.getText();
                 LocalDate data = LocalDate.parse(txtData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                
+                // --- VALIDAÇÃO DE DATA NA GUI ---
+                if (data.isBefore(plano.getDataInicio()) || data.isAfter(plano.getDataFim())) {
+                    throw new Exception("Data fora da vigência do plano (" + 
+                        plano.getDataInicio() + " a " + plano.getDataFim() + ")");
+                }
+                // --------------------------------
+                
                 int duracao = Integer.parseInt(txtDuracao.getText()) * 60;
                 String tipo = (String) cbTipo.getSelectedItem();
                 
-                // 1. Cadastra no sistema (Isso atualiza Metas e Desafios!)
                 if(tipo.equals("Corrida")) {
                     double dist = Double.parseDouble(txtExtra.getText());
                     TelaComputador.controladorTreino.cadastrarTreino(u.getCpf(), "Corrida", data, duracao, nome, dist, 0, 0);
@@ -144,7 +160,6 @@ public class TelaDetalhesPlanoTreino {
                     TelaComputador.controladorTreino.cadastrarTreino(u.getCpf(), "Intervalado", data, duracao, nome, 0, series, 0);
                 }
 
-                // 2. Pega o último treino adicionado e vincula ao plano
                 Treino novoTreino = u.getTreinos().get(u.getTreinos().size() - 1);
                 plano.adicionarTreino(novoTreino);
                 controladorCliente.atualizarCliente(u);

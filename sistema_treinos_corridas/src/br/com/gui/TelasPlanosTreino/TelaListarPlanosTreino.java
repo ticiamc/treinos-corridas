@@ -9,6 +9,7 @@ import br.com.negocio.treinos.PlanoTreino;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.time.format.DateTimeFormatter; // Import Adicionado
 
 public class TelaListarPlanosTreino {
     private final ControladorCliente controlador;
@@ -26,17 +27,26 @@ public class TelaListarPlanosTreino {
         
         JList<PlanoTreino> lista = new JList<>(model);
         
-        // Renderizador para mostrar nome do plano na lista
+        // --- RENDERIZADOR ATUALIZADO (MOSTRA DATAS) ---
         lista.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof PlanoTreino) {
-                    setText(((PlanoTreino)value).getNome());
+                    PlanoTreino p = (PlanoTreino) value;
+                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                    // Exibe: "Projeto Maratona (01/01/2025 a 30/06/2025)"
+                    String texto = String.format("%s (%s a %s)", 
+                        p.getNome(), 
+                        p.getDataInicio().format(fmt), 
+                        p.getDataFim().format(fmt)
+                    );
+                    setText(texto);
                 }
                 return this;
             }
         });
+        // ----------------------------------------------
         
         painel.add(new JScrollPane(lista), BorderLayout.CENTER);
 

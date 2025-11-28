@@ -77,17 +77,27 @@ public class TelaComputador {
         lateral.add(btnSair);
         painelGeral.add(lateral, BorderLayout.WEST);
         
-        JPanel grid = new JPanel(new GridLayout(3, 3, 10, 10));
+        // GRID DE BOTÕES DO ADMIN
+        JPanel grid = new JPanel(new GridLayout(3, 2, 10, 10)); // Ajustado layout
         grid.setBackground(COR_FUNDO);
         grid.setBorder(new EmptyBorder(20,20,20,20));
         
+        // Botão 1: Cadastrar Novo Usuário
         JButton btnCadUser = criarBotaoEstilizado("Cadastrar Usuário");
         btnCadUser.addActionListener(e -> abrirTelaCadastroUsuario());
-        JButton btnCriarDesafio = criarBotaoEstilizado("Criar Desafio");
-        btnCriarDesafio.addActionListener(e -> TelaDesafios.abrirDialogoCriarDesafio());
+        
+        // Botão 2: Gerenciar Usuários (Listar/Editar) - NOVO
+        JButton btnGerenciarUsers = criarBotaoEstilizado("Gerenciar Usuários");
+        btnGerenciarUsers.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarUsuarios().criarPainel()));
+
+        // Botão 3: Gerenciar Desafios (Detalhes/Ganhadores/Editar) - NOVO
+        JButton btnGerenciarDesafios = criarBotaoEstilizado("Gerenciar Desafios");
+        btnGerenciarDesafios.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarDesafios().criarPainel()));
         
         grid.add(btnCadUser);
-        grid.add(btnCriarDesafio);
+        grid.add(btnGerenciarUsers);
+        grid.add(btnGerenciarDesafios);
+        
         painelGeral.add(grid, BorderLayout.CENTER);
         return painelGeral;
     }
@@ -166,7 +176,6 @@ public class TelaComputador {
         btnFinalizar.setBackground(COR_DESTAQUE);
         btnFinalizar.setForeground(Color.BLACK);
         
-        // BOTÃO CANCELAR ADICIONADO
         JButton btnCancelar = criarBotaoEstilizado("Cancelar");
         btnCancelar.setBackground(new Color(180, 50, 50));
         btnCancelar.addActionListener(e -> tela.dispose());
@@ -174,8 +183,7 @@ public class TelaComputador {
         painelBotoes.add(btnCorrida);
         painelBotoes.add(btnIntervalado);
         painelBotoes.add(btnFinalizar);
-        painelBotoes.add(btnCancelar); // Adicionado ao painel
-        
+        painelBotoes.add(btnCancelar);
         tela.add(painelBotoes, BorderLayout.SOUTH);
 
         final JTextField[] campoDistancia = {null};
@@ -243,10 +251,6 @@ public class TelaComputador {
         tela.add(btnLimpar, BorderLayout.SOUTH);
         tela.setSize(400,300);
         tela.setVisible(true);
-    }
-
-    public static void abrirTelaHistorico(Usuario u) {
-        GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(u).criarPainel());
     }
 
     public static void TelaMetas() { GerenciadorTelas.getInstance().carregarTela(new TelaMetas().criarPainel()); }
