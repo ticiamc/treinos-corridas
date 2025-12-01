@@ -1,11 +1,20 @@
 package br.com.negocio.treinos;
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+
+// Importações do iText (Necessário adicionar o .jar do iText ao projeto)
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
 
 public class Relatorio {
     private Relatorio() {}
@@ -19,19 +28,7 @@ public class Relatorio {
         } else {
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             for (Treino t : cliente.getTreinos()) {
-                String detalhes = "";
-                
-                // ALTERAÇÃO AQUI: Incluindo Velocidade Média se for Corrida
-                if (t instanceof Corrida) {
-                    Corrida c = (Corrida) t;
-                    detalhes = String.format("%.2f km | Vel. Média: %.1f km/h", 
-                        c.getDistanciaEmMetros() / 1000.0,
-                        c.calcularVelocidadeMediaKmPorHora());
-                } 
-                else if (t instanceof Intervalado) {
-                    detalhes = ((Intervalado) t).getSeries() + " séries";
-                }
-                
+                String detalhes = getDetalhesTreino(t);
                 sb.append(String.format("Data: %s | Treino: %s | %s | %d min\n",
                     t.getDataExecucao().format(fmt), t.getNomeTreino(), detalhes, t.getDuracaoSegundos() / 60));
             }
@@ -42,9 +39,7 @@ public class Relatorio {
 
     public static void exportarRelatorioAtividadesCSV(Usuario cliente, String caminhoArquivo) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(caminhoArquivo))) {
-            // ALTERAÇÃO AQUI: Adicionando coluna Velocidade na exportação
             writer.println("Data,Nome do Treino,Tipo,Duracao(min),Calorias,Detalhes,VelocidadeMedia(km/h)");
-            
             DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
             for (Treino t : cliente.getTreinos()) {
                 String tipo = (t instanceof Corrida) ? "Corrida" : "Intervalado";
@@ -60,15 +55,52 @@ public class Relatorio {
                 }
 
                 writer.printf("%s,%s,%s,%d,%.2f,%s,%s%n",
-                        t.getDataExecucao().format(fmt), 
-                        t.getNomeTreino(), 
-                        tipo,
-                        t.getDuracaoSegundos() / 60, 
-                        t.calcularCaloriasQueimadas(cliente), 
-                        detalhes,
-                        velocidade);
+                        t.getDataExecucao().format(fmt), t.getNomeTreino(), tipo,
+                        t.getDuracaoSegundos() / 60, t.calcularCaloriasQueimadas(cliente), detalhes, velocidade);
             }
         }
+    }
+
+    // --- NOVO: Método para Exportar PDF (Requisito de Lib Externa) ---
+    public static void exportarRelatorioAtividadesPDF(Usuario cliente, String caminhoArquivo) throws IOException, DocumentException {
+        Document document = new Document();
+        PdfWriter.getInstance(document, new FileOutputStream(caminhoArquivo));
+        document.open();
+
+        Font fontTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+        Font fontCorpo = FontFactory.getFont(FontFactory.HELVETICA, 12);
+
+        document.add(new Paragraph("Relatório de Treinos - Iron Track", fontTitulo));
+        document.add(new Paragraph("Atleta: " + cliente.getNome(), fontCorpo));
+        document.add(new Paragraph("Gerado em: " + java.time.LocalDate.now(), fontCorpo));
+        document.add(new Paragraph("--------------------------------------------------"));
+        document.add(new Paragraph(" ")); // Espaço
+
+        if (cliente.getTreinos().isEmpty()) {
+            document.add(new Paragraph("Nenhum treino registrado.", fontCorpo));
+        } else {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            for (Treino t : cliente.getTreinos()) {
+                String linha = String.format("%s - %s (%d min) - %s", 
+                    t.getDataExecucao().format(fmt), 
+                    t.getNomeTreino(), 
+                    t.getDuracaoSegundos() / 60,
+                    getDetalhesTreino(t));
+                
+                document.add(new Paragraph(linha, fontCorpo));
+            }
+        }
+        document.close();
+    }
+
+    private static String getDetalhesTreino(Treino t) {
+        if (t instanceof Corrida) {
+            Corrida c = (Corrida) t;
+            return String.format("%.2f km | Vel: %.1f km/h", c.getDistanciaEmMetros() / 1000.0, c.calcularVelocidadeMediaKmPorHora());
+        } else if (t instanceof Intervalado) {
+            return ((Intervalado) t).getSeries() + " séries";
+        }
+        return "";
     }
 
     public static String gerarRankingDesafioTexto(Desafio desafio) {
@@ -81,10 +113,8 @@ public class Relatorio {
             return sb.toString();
         }
         
-        for (ParticipacaoDesafio p : participacoes) {
-            p.setProgresso(calcularProgressoDesafio(p.getUsuario(), desafio));
-        }
-        Collections.sort(participacoes, (p1, p2) -> Double.compare(p2.getProgresso(), p1.getProgresso()));
+        // Ordenação por progresso
+        participacoes.sort((p1, p2) -> Double.compare(p2.getProgresso(), p1.getProgresso()));
 
         int pos = 1;
         for (ParticipacaoDesafio p : participacoes) {
@@ -93,19 +123,5 @@ public class Relatorio {
             pos++;
         }
         return sb.toString();
-    }
-    
-    private static double calcularProgressoDesafio(Usuario usuario, Desafio desafio) {
-        double progressoTotal = 0;
-        for (Treino treino : usuario.getTreinos()) {
-            if (treino instanceof Corrida) {
-                Corrida c = (Corrida) treino;
-                java.time.LocalDate dataC = c.getDataExecucao().toLocalDate();
-                if (!dataC.isBefore(desafio.getDataInicio()) && !dataC.isAfter(desafio.getDataFim())) {
-                    progressoTotal += c.getDistanciaEmMetros();
-                }
-            }
-        }
-        return progressoTotal;
     }
 }
