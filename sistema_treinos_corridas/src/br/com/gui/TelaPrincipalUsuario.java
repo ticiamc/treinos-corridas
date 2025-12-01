@@ -13,7 +13,6 @@ public class TelaPrincipalUsuario {
     private static final Color COR_DESTAQUE = new Color(74, 255, 86);
 
     public JPanel criarPainelUsuario() {
-        // Recupera o usuário da sessão
         Usuario logado = SessaoUsuario.getInstance().getUsuarioLogado();
         String nomeUsuario = (logado != null) ? logado.getNome() : "Visitante";
 
@@ -27,71 +26,53 @@ public class TelaPrincipalUsuario {
         menuLateral.setPreferredSize(new Dimension(200, 0));
         menuLateral.setBorder(new EmptyBorder(20, 10, 20, 10));
 
-        // Saudação
         JLabel lblOla = new JLabel("Olá, " + nomeUsuario.split(" ")[0]);
         lblOla.setForeground(COR_DESTAQUE);
         lblOla.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblOla.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         menuLateral.add(lblOla);
-        menuLateral.add(Box.createVerticalStrut(30)); // Espaço
+        menuLateral.add(Box.createVerticalStrut(30)); 
 
-        // Botões do Menu
-        adicionarBotaoMenu(menuLateral, "Registrar Treino", e -> {
-            TelaComputador.abrirTelaCadastroTreinoUsuarioLogado();
-        });
-        Container menu = null;
-        menu.add(Box.createVerticalStrut(10));
-        
+        adicionarBotaoMenu(menuLateral, "Registrar Treino", e -> TelaComputador.abrirTelaCadastroTreinoUsuarioLogado());
         menuLateral.add(Box.createVerticalStrut(10));
         
         adicionarBotaoMenu(menuLateral, "Meu Histórico", e -> {
-            if(logado != null) TelaComputador.abrirTelaHistorico(logado);
+            if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaHistoricoTreinos(logado).criarPainel());
         });
-        menu.add(Box.createVerticalStrut(10));
-        
-        adicionarBotaoMenu(menu, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
-
         menuLateral.add(Box.createVerticalStrut(10));
 
         adicionarBotaoMenu(menuLateral, "Minhas Metas", e -> TelaComputador.TelaMetas());
+        menuLateral.add(Box.createVerticalStrut(10));
         
-        menuLateral.add(Box.createVerticalStrut(10));
-
         adicionarBotaoMenu(menuLateral, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
-
         menuLateral.add(Box.createVerticalStrut(10));
 
-        // --- CORREÇÃO AQUI ---
-        // Antes estava: e -> TelaPerfilUsuario()
-        // Correção: new TelaPerfilUsuario(...)
+        // CORREÇÃO: Chama o método criarPainel da TelaPerfilUsuario e carrega no Gerenciador
         adicionarBotaoMenu(menuLateral, "Meu Perfil", e -> {
-            new TelaPerfilUsuario(TelaComputador.controladorCliente);
+             if(logado != null) {
+                 GerenciadorTelas.getInstance().carregarTela(new TelaPerfilUsuario(logado).criarPainel());
+             }
         });
 
-        // Espaço elástico para empurrar o Sair para baixo
         menuLateral.add(Box.createVerticalGlue());
 
-        // Botão Sair
-        JButton btnSair = new JButton("SAIR / LOGOUT");
+        JButton btnSair = new JButton("SAIR");
         btnSair.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnSair.setBackground(new Color(200, 50, 50));
         btnSair.setForeground(Color.WHITE);
-        btnSair.setMaximumSize(new Dimension(180, 40));
         btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
             GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
         menuLateral.add(btnSair);
 
-        // --- ÁREA CENTRAL (Dashboard Simples) ---
+        // --- DASHBOARD CENTRAL ---
         JPanel painelCentral = new JPanel(new GridBagLayout());
         painelCentral.setBackground(COR_FUNDO);
-        
-        JLabel lblBemVindo = new JLabel("<html><center>Bem-vindo à sua<br>Área do Atleta</center></html>");
-        lblBemVindo.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblBemVindo.setForeground(Color.DARK_GRAY);
-        
+        JLabel lblBemVindo = new JLabel("<html><center>Área do Atleta<br>Selecione uma opção</center></html>");
+        lblBemVindo.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblBemVindo.setForeground(Color.GRAY);
         painelCentral.add(lblBemVindo);
 
         painelUsuario.add(menuLateral, BorderLayout.WEST);

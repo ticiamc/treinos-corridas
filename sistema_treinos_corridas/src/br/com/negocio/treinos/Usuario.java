@@ -77,12 +77,4 @@ public class Usuario {
         }
         return null;
     }
-
-    public Usuario buscarCliente(String cpf2) {
-        throw new UnsupportedOperationException("Unimplemented method 'buscarCliente'");
-    }
-
-	public void buscarCliente(Usuario usuarioAtual) {
-		throw new UnsupportedOperationException("Unimplemented method 'buscarCliente'");
-	}
 }

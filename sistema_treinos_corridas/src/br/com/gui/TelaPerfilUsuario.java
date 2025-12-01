@@ -1,146 +1,100 @@
 package br.com.gui;
 
+import br.com.negocio.Fachada;
+import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class TelaPerfilUsuario extends JFrame {
+// Agora apenas gera um PAINEL, não é mais um JFrame independente
+public class TelaPerfilUsuario {
 
-    // Referência ao controlador
-    private Usuario controlador;
+    private Usuario usuarioAtual;
 
-    // Componentes da tela
-    private JTextField campoCpfBusca;
-    private JTextField campoNome;
-    private JTextField campoIdade;
-    private JTextField campoPeso;
-    private JTextField campoAltura;
-    private JTextField campoEmail;
-
-    private JButton botaoBuscar;
-    private JButton botaoSalvar;
-
-    private Usuario usuarioAtual; // armazena o usuário encontrado
-
-    public TelaPerfilUsuario(Usuario sel) {
-        this.controlador = sel;
-
-        setTitle("Perfil do Usuário");
-        setSize(400, 400);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
-
-        // Painel superior (busca)
-        JPanel painelBusca = new JPanel(new GridLayout(1, 3));
-        painelBusca.add(new JLabel("CPF:"));
-        campoCpfBusca = new JTextField();
-        painelBusca.add(campoCpfBusca);
-
-        botaoBuscar = new JButton("Buscar");
-        painelBusca.add(botaoBuscar);
-
-        add(painelBusca, BorderLayout.NORTH);
-
-        // Painel central (dados do usuário)
-        JPanel painelDados = new JPanel(new GridLayout(6, 2, 5, 5));
-
-        painelDados.add(new JLabel("Nome:"));
-        campoNome = new JTextField();
-        painelDados.add(campoNome);
-
-        painelDados.add(new JLabel("Idade:"));
-        campoIdade = new JTextField();
-        painelDados.add(campoIdade);
-
-        painelDados.add(new JLabel("Peso:"));
-        campoPeso = new JTextField();
-        painelDados.add(campoPeso);
-
-        painelDados.add(new JLabel("Altura:"));
-        campoAltura = new JTextField();
-        painelDados.add(campoAltura);
-
-        painelDados.add(new JLabel("Email:"));
-        campoEmail = new JTextField();
-        painelDados.add(campoEmail);
-
-        add(painelDados, BorderLayout.CENTER);
-
-        // Botão salvar
-        botaoSalvar = new JButton("Salvar Alterações");
-        add(botaoSalvar, BorderLayout.SOUTH);
-
-        // Eventos
-        configurarEventos();
-
-        setVisible(true);
+    public TelaPerfilUsuario(Usuario usuario) {
+        this.usuarioAtual = usuario;
     }
 
-    private void configurarEventos() {
+    public JPanel criarPainel() {
+        JPanel painel = new JPanel(new BorderLayout());
+        painel.setBackground(new Color(30, 30, 30));
+        
+        // Título
+        JLabel lblTitulo = new JLabel("Meu Perfil", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitulo.setForeground(new Color(74, 255, 86));
+        painel.add(lblTitulo, BorderLayout.NORTH);
 
-        // --- Botão Buscar ---
-        botaoBuscar.addActionListener(e -> {
-            String cpf = campoCpfBusca.getText().trim();
+        // Formulário
+        JPanel form = new JPanel(new GridLayout(6, 2, 10, 10));
+        form.setBackground(new Color(45, 45, 45));
+        form.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-            if (cpf.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Digite um CPF para buscar.");
-                return;
-            }
+        JTextField campoNome = new JTextField(usuarioAtual.getNome());
+        JTextField campoIdade = new JTextField(String.valueOf(usuarioAtual.getIdade()));
+        JTextField campoPeso = new JTextField(String.valueOf(usuarioAtual.getPeso()));
+        JTextField campoAltura = new JTextField(String.valueOf(usuarioAtual.getAltura()));
+        JTextField campoEmail = new JTextField(usuarioAtual.getEmail());
+        JLabel lblCpf = new JLabel(usuarioAtual.getCpf()); 
+        lblCpf.setForeground(Color.GRAY);
 
-            usuarioAtual = controlador.buscarCliente(cpf);
+        adicionarCampo(form, "Nome:", campoNome);
+        adicionarCampo(form, "Idade:", campoIdade);
+        adicionarCampo(form, "Peso (kg):", campoPeso);
+        adicionarCampo(form, "Altura (m):", campoAltura);
+        adicionarCampo(form, "E-mail:", campoEmail);
+        
+        JLabel lCpf = new JLabel("CPF:"); lCpf.setForeground(Color.WHITE);
+        form.add(lCpf); form.add(lblCpf);
 
-            if (usuarioAtual == null) {
-                JOptionPane.showMessageDialog(this, "Usuário não encontrado.");
-                limparCampos();
-                return;
-            }
+        painel.add(form, BorderLayout.CENTER);
 
-            carregarUsuarioNosCampos();
-        });
+        // Botões
+        JPanel botoes = new JPanel();
+        botoes.setBackground(new Color(30, 30, 30));
 
-        // --- Botão Salvar ---
-        botaoSalvar.addActionListener(e -> {
-            if (usuarioAtual == null) {
-                JOptionPane.showMessageDialog(this, "Nenhum usuário carregado.");
-                return;
-            }
-
+        JButton btnSalvar = new JButton("Salvar Alterações");
+        btnSalvar.setBackground(new Color(74, 255, 86));
+        btnSalvar.addActionListener(e -> {
             try {
                 usuarioAtual.setNome(campoNome.getText());
-                usuarioAtual.setEmail(campoEmail.getText());
                 usuarioAtual.setIdade(Integer.parseInt(campoIdade.getText()));
                 usuarioAtual.setPeso(Double.parseDouble(campoPeso.getText()));
                 usuarioAtual.setAltura(Double.parseDouble(campoAltura.getText()));
+                usuarioAtual.setEmail(campoEmail.getText());
 
-                controlador.buscarCliente(usuarioAtual);
-
-                JOptionPane.showMessageDialog(this, 
-                        "Dados atualizados com sucesso!");
-
+                // Persiste via Fachada
+                Fachada.getInstance().getControladorCliente().atualizarCliente(usuarioAtual);
+                JOptionPane.showMessageDialog(painel, "Dados atualizados com sucesso!");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, 
-                        "Erro ao atualizar. Verifique os dados digitados.");
+                JOptionPane.showMessageDialog(painel, "Erro: Verifique os dados numéricos.");
             }
         });
+
+        JButton btnVoltar = new JButton("Voltar");
+        btnVoltar.addActionListener(e -> {
+            // Verifica se é admin ou usuario comum para voltar pra tela certa
+            if(SessaoUsuario.getInstance().getUsuarioLogado() != null && 
+               SessaoUsuario.getInstance().getUsuarioLogado().getCpf().equals(usuarioAtual.getCpf())) {
+                GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario());
+            } else {
+                GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarUsuarios().criarPainel());
+            }
+        });
+
+        botoes.add(btnVoltar);
+        botoes.add(btnSalvar);
+        painel.add(botoes, BorderLayout.SOUTH);
+
+        return painel;
     }
 
-    // Preenche os campos com os dados encontrados
-    private void carregarUsuarioNosCampos() {
-        campoNome.setText(usuarioAtual.getNome());
-        campoIdade.setText(String.valueOf(usuarioAtual.getIdade()));
-        campoPeso.setText(String.valueOf(usuarioAtual.getPeso()));
-        campoAltura.setText(String.valueOf(usuarioAtual.getAltura()));
-        campoEmail.setText(usuarioAtual.getEmail());
-    }
-
-    // Limpa campos quando erro ou usuário não encontrado
-    private void limparCampos() {
-        campoNome.setText("");
-        campoIdade.setText("");
-        campoPeso.setText("");
-        campoAltura.setText("");
-        campoEmail.setText("");
+    private void adicionarCampo(JPanel p, String label, JComponent campo) {
+        JLabel l = new JLabel(label);
+        l.setForeground(Color.WHITE);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        p.add(l);
+        p.add(campo);
     }
 }
