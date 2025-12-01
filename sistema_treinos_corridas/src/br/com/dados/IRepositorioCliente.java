@@ -4,7 +4,6 @@ import br.com.negocio.treinos.Usuario;
 import java.util.List;
 
 public interface IRepositorioCliente {
-    // CRUD
     void adicionarElemento(Usuario cliente);
     Usuario buscarElementoPorCpf(String cpf);
     Usuario buscarElementoPorNome(String nome);
@@ -12,4 +11,3 @@ public interface IRepositorioCliente {
     void removerElemento(String cpf);
     List<Usuario> listarTodos();
 }
-

@@ -14,12 +14,7 @@ import br.com.negocio.treinos.Treino;
 import br.com.negocio.treinos.TreinoProgresso;
 import br.com.negocio.treinos.Usuario;
 
-/**
- * Controlador (Camada de Negócio) responsável pelas regras
- * relacionadas aos Treinos de um usuário.
- */
 public class ControladorTreino {
-
     private IRepositorioCliente repositorioCliente;
 
     public ControladorTreino(IRepositorioCliente repositorioCliente) {
@@ -84,9 +79,6 @@ public class ControladorTreino {
         System.out.println("SUCESSO: Treino cadastrado para " + usuario.getNome());
     }
 
-    /**
-     * Busca um treino específico na lista de um usuário.
-     */
     public Treino buscarTreino(Usuario usuario, int idTreino) {
         if (usuario != null) {
             return usuario.buscarTreinoPorId(idTreino);
@@ -108,8 +100,6 @@ public class ControladorTreino {
             } else {
                 System.out.println("ERRO: Treino com ID " + idTreino + " não encontrado.");
             }
-        } else {
-            System.out.println("ERRO: Usuário não encontrado.");
         }
     }
 

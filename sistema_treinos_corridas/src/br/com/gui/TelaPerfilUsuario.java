@@ -1,6 +1,5 @@
 package br.com.gui;
 
-import br.com.negocio.ControladorCliente;
 import br.com.negocio.treinos.Usuario;
 
 import javax.swing.*;
@@ -9,7 +8,7 @@ import java.awt.*;
 public class TelaPerfilUsuario extends JFrame {
 
     // Referência ao controlador
-    private ControladorCliente controlador;
+    private Usuario controlador;
 
     // Componentes da tela
     private JTextField campoCpfBusca;
@@ -24,8 +23,8 @@ public class TelaPerfilUsuario extends JFrame {
 
     private Usuario usuarioAtual; // armazena o usuário encontrado
 
-    public TelaPerfilUsuario(ControladorCliente controlador) {
-        this.controlador = controlador;
+    public TelaPerfilUsuario(Usuario sel) {
+        this.controlador = sel;
 
         setTitle("Perfil do Usuário");
         setSize(400, 400);
@@ -115,7 +114,7 @@ public class TelaPerfilUsuario extends JFrame {
                 usuarioAtual.setPeso(Double.parseDouble(campoPeso.getText()));
                 usuarioAtual.setAltura(Double.parseDouble(campoAltura.getText()));
 
-                controlador.atualizarCliente(usuarioAtual);
+                controlador.buscarCliente(usuarioAtual);
 
                 JOptionPane.showMessageDialog(this, 
                         "Dados atualizados com sucesso!");

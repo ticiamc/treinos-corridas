@@ -1,24 +1,19 @@
 package br.com.negocio.treinos;
 
 import java.time.LocalDate;
-// O import java.util.UUID foi removido pois não é usado (corrigindo o warning da imagem)
+import java.time.format.DateTimeFormatter;
 
-/**
- * Representa uma Meta (objetivo) que um Usuário deseja alcançar.
- */
 public class Meta {
-
-    private static int proximoId = 1; // Contador estático para IDs
-    
+    private static int proximoId = 1;
     private int idMeta;
     private String descricao;
     private TipoMeta tipoMeta;
-    private double valorAlvo; // Valor principal (pode ser distância em metros ou tempo em minutos)
+    private double valorAlvo; 
+    private double progressoAtual; // Campo que guarda o acumulado
     private LocalDate dataInicio;
     private LocalDate dataFim;
-    private String status; // Ex: "Pendente", "Concluída"
+    private String status;
 
-    // Construtor usado pelo ControladorMeta
     public Meta(String descricao, double valorAlvo, TipoMeta tipoMeta, LocalDate dataInicio, LocalDate dataFim) {
         this.idMeta = proximoId++;
         this.descricao = descricao;
@@ -26,92 +21,66 @@ public class Meta {
         this.tipoMeta = tipoMeta;
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
-        this.status = "Pendente"; // Toda meta começa como pendente
+        this.progressoAtual = 0.0;
+        this.status = "Pendente";
     }
 
-    // --- Getters e Setters (Necessários pelos Controladores) ---
-
-    public int getIdMeta() {
-        return idMeta;
+    public void adicionarProgresso(double valor) {
+        if (!this.status.equalsIgnoreCase("Concluída")) {
+            this.progressoAtual += valor;
+        }
     }
 
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public TipoMeta getTipo() { // Usado por TreinoProgresso
-        return tipoMeta;
-    }
-
-    public void setTipoMeta(TipoMeta tipoMeta) {
-        this.tipoMeta = tipoMeta;
-    }
-
-    public double getValorAlvo() {
-        return valorAlvo;
-    }
-
-    public void setValorAlvo(double valorAlvo) {
-        this.valorAlvo = valorAlvo;
-    }
+    public int getIdMeta() { return idMeta; }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
     
-    // Métodos específicos para TreinoProgresso
+    public TipoMeta getTipo() { return tipoMeta; }
+    public void setTipoMeta(TipoMeta tipoMeta) { this.tipoMeta = tipoMeta; }
     
-    // Retorna o alvo (se for meta de distância)
-    public double getDistancia() {
-        return (tipoMeta == TipoMeta.DISTANCIA) ? valorAlvo : 0;
-    }
+    public double getValorAlvo() { return valorAlvo; }
+    public void setValorAlvo(double valorAlvo) { this.valorAlvo = valorAlvo; }
     
-    // Retorna o alvo (se for meta de tempo)
-    public double getTempo() {
-        return (tipoMeta == TipoMeta.TEMPO) ? valorAlvo : 0;
-    }
+    public double getProgressoAtual() { return progressoAtual; }
 
-    public LocalDate getDataInicio() {
-        return dataInicio;
-    }
+    public double getDistancia() { return (tipoMeta == TipoMeta.DISTANCIA) ? valorAlvo : 0; }
+    public double getTempo() { return (tipoMeta == TipoMeta.TEMPO) ? valorAlvo : 0; }
 
-    public void setDataInicio(LocalDate dataInicio) {
-        this.dataInicio = dataInicio;
-    }
-
-    public LocalDate getDataFim() {
-        return dataFim;
-    }
-
-    public void setDataFim(LocalDate dataFim) {
-        this.dataFim = dataFim;
-    }
-
-    public String getStatus() { // Usado por TreinoProgresso
-        return status;
-    }
-
-    public void setStatus(String status) { // Usado por TreinoProgresso
-        this.status = status;
-    }
+    public LocalDate getDataInicio() { return dataInicio; }
+    public void setDataInicio(LocalDate dataInicio) { this.dataInicio = dataInicio; }
+    
+    public LocalDate getDataFim() { return dataFim; }
+    public void setDataFim(LocalDate dataFim) { this.dataFim = dataFim; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     @Override
     public String toString() {
-        String alvo = "";
+        String alvoStr = "";
+        String progressoStr = "";
+        
+        // Formatação inteligente dependendo do tipo
         if (tipoMeta == TipoMeta.DISTANCIA) {
-            alvo = String.format("%.2f km", valorAlvo / 1000.0);
+            alvoStr = String.format("%.1f km", valorAlvo / 1000.0);
+            progressoStr = String.format("%.1f km", progressoAtual / 1000.0);
         } else if (tipoMeta == TipoMeta.TEMPO) {
-            alvo = String.format("%.0f min", valorAlvo);
+            alvoStr = String.format("%.0f min", valorAlvo);
+            progressoStr = String.format("%.0f min", progressoAtual);
         } else {
-            alvo = String.format("%.0f kcal", valorAlvo);
+            alvoStr = String.format("%.0f kcal", valorAlvo);
+            progressoStr = String.format("%.0f kcal", progressoAtual);
         }
         
-        return String.format("ID: %d | Meta: %s | Alvo: %s | Status: %s | Prazo: %s",
-            idMeta,
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        // Exibe: [PENDENTE] Correr Maratona | 5.0 km de 42.0 km | Prazo: 30/12/2025
+        return String.format("[%s] %s | %s de %s | Prazo: %s",
+            status.toUpperCase(),
             descricao,
-            alvo,
-            status,
-            dataFim.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            progressoStr, // Quanto já fez
+            alvoStr,      // Qual é o objetivo
+            dataFim.format(fmt)
         );
     }
 }

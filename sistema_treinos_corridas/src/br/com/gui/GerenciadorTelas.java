@@ -21,6 +21,7 @@ public class GerenciadorTelas {
         if (instance == null) {
             instance = new GerenciadorTelas();
         }
+        if (instance == null) instance = new GerenciadorTelas();
         return instance;
     }
 

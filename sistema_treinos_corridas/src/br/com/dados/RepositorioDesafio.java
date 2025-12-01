@@ -4,31 +4,18 @@ import br.com.negocio.treinos.Desafio;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implementação em memória do repositório de Desafios.
- * (Arquivo criado pois não estava presente no projeto original)
- */
 public class RepositorioDesafio implements IRepositorioDesafio {
-
     private List<Desafio> desafios;
     
-    public RepositorioDesafio() {
-        this.desafios = new ArrayList<>();
-    }
+    public RepositorioDesafio() { this.desafios = new ArrayList<>(); }
 
     @Override
-    public void cadastrar(Desafio desafio) {
-        if (desafio != null) {
-            this.desafios.add(desafio);
-        }
-    }
+    public void cadastrar(Desafio desafio) { if (desafio != null) this.desafios.add(desafio); }
 
     @Override
     public Desafio buscar(int idDesafio) {
         for (Desafio d : desafios) {
-            if (d.getIdDesafio() == idDesafio) {
-                return d;
-            }
+            if (d.getIdDesafio() == idDesafio) return d;
         }
         return null;
     }
@@ -44,12 +31,8 @@ public class RepositorioDesafio implements IRepositorioDesafio {
     }
 
     @Override
-    public List<Desafio> listarTodos() {
-        return new ArrayList<>(desafios); // Retorna cópia
-    }
+    public List<Desafio> listarTodos() { return new ArrayList<>(desafios); }
 
     @Override
-    public void remover(int idDesafio) {
-        this.desafios.removeIf(d -> d.getIdDesafio() == idDesafio);
-    }
+    public void remover(int idDesafio) { this.desafios.removeIf(d -> d.getIdDesafio() == idDesafio); }
 }

@@ -40,12 +40,17 @@ public class TelaPrincipalUsuario {
         adicionarBotaoMenu(menuLateral, "Registrar Treino", e -> {
             TelaComputador.abrirTelaCadastroTreinoUsuarioLogado();
         });
+        Container menu = null;
+        menu.add(Box.createVerticalStrut(10));
         
         menuLateral.add(Box.createVerticalStrut(10));
         
         adicionarBotaoMenu(menuLateral, "Meu Histórico", e -> {
             if(logado != null) TelaComputador.abrirTelaHistorico(logado);
         });
+        menu.add(Box.createVerticalStrut(10));
+        
+        adicionarBotaoMenu(menu, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
 
         menuLateral.add(Box.createVerticalStrut(10));
 
@@ -95,7 +100,7 @@ public class TelaPrincipalUsuario {
         return painelUsuario;
     }
 
-    private void adicionarBotaoMenu(JPanel painel, String texto, java.awt.event.ActionListener acao) {
+    private void adicionarBotaoMenu(Container menu, String texto, java.awt.event.ActionListener acao) {
         JButton btn = new JButton(texto);
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
         btn.setMaximumSize(new Dimension(180, 40));
@@ -103,6 +108,6 @@ public class TelaPrincipalUsuario {
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.addActionListener(acao);
-        painel.add(btn);
+        menu.add(btn);
     }
 }

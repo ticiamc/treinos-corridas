@@ -1,112 +1,108 @@
 package br.com.negocio.treinos;
 
-import java.time.LocalDate;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class Relatorio {
+    private Relatorio() {}
 
-    private Relatorio() {
-        // Classe utilitária, não deve ser instanciada
-    }
-
-    // Gera um relatório simples de todas as atividades de um cliente.
-    public static void gerarRelatorioAtividades(Usuario cliente) {
-        System.out.println("--- Relatório de Atividades para: " + cliente.getNome() + " ---");
+    public static String gerarRelatorioAtividadesTexto(Usuario cliente) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- Relatório de Atividades: ").append(cliente.getNome()).append(" ---\n\n");
+        
         if (cliente.getTreinos().isEmpty()) {
-            System.out.println("Nenhum treino registrado.");
-            return;
-        }
-        for (Treino t : cliente.getTreinos()) {
-            System.out.println(t); // O toString() do Treino/Corrida/Intervalado será usado
-        }
-        System.out.println("--- Fim do Relatório ---");
-    }
-
-    // Gera um relatório de evolução (ex: total de km).
-    public static void gerarRelatorioEvolucao(Usuario cliente) {
-        System.out.println("--- Relatório de Evolução para: " + cliente.getNome() + " ---");
-        double distanciaTotal = 0;
-        int totalCorridas = 0;
-
-        for (Treino t : cliente.getTreinos()) {
-            if (t instanceof Corrida) {
-                distanciaTotal += ((Corrida) t).getDistanciaEmMetros();
-                totalCorridas++;
+            sb.append("Nenhuma atividade registrada neste perfil.\n");
+        } else {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            for (Treino t : cliente.getTreinos()) {
+                String detalhes = "";
+                
+                // ALTERAÇÃO AQUI: Incluindo Velocidade Média se for Corrida
+                if (t instanceof Corrida) {
+                    Corrida c = (Corrida) t;
+                    detalhes = String.format("%.2f km | Vel. Média: %.1f km/h", 
+                        c.getDistanciaEmMetros() / 1000.0,
+                        c.calcularVelocidadeMediaKmPorHora());
+                } 
+                else if (t instanceof Intervalado) {
+                    detalhes = ((Intervalado) t).getSeries() + " séries";
+                }
+                
+                sb.append(String.format("Data: %s | Treino: %s | %s | %d min\n",
+                    t.getDataExecucao().format(fmt), t.getNomeTreino(), detalhes, t.getDuracaoSegundos() / 60));
             }
         }
-        System.out.println("Corridas totais: " + totalCorridas);
-        System.out.println("Distância total percorrida: " + (distanciaTotal / 1000) + " km");
-        System.out.println("--- Fim do Relatório ---");
+        sb.append("\n--- Fim do Relatório ---");
+        return sb.toString();
     }
 
-    /**
-     * Gera o ranking de um desafio.
-     * CALCULA o progresso somando as corridas do usuário que estão dentro do período de datas do desafio.
-     */
-    public static void gerarRankingDesafio(Desafio desafio) {
-        System.out.println("--- Ranking do Desafio: " + desafio.getDescricao() + " ---");
+    public static void exportarRelatorioAtividadesCSV(Usuario cliente, String caminhoArquivo) throws IOException {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(caminhoArquivo))) {
+            // ALTERAÇÃO AQUI: Adicionando coluna Velocidade na exportação
+            writer.println("Data,Nome do Treino,Tipo,Duracao(min),Calorias,Detalhes,VelocidadeMedia(km/h)");
+            
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            for (Treino t : cliente.getTreinos()) {
+                String tipo = (t instanceof Corrida) ? "Corrida" : "Intervalado";
+                String detalhes = "";
+                String velocidade = "0.0";
+
+                if (t instanceof Corrida) {
+                    Corrida c = (Corrida) t;
+                    detalhes = String.valueOf(c.getDistanciaEmMetros());
+                    velocidade = String.format("%.2f", c.calcularVelocidadeMediaKmPorHora()).replace(',', '.');
+                } else if (t instanceof Intervalado) {
+                    detalhes = String.valueOf(((Intervalado) t).getSeries());
+                }
+
+                writer.printf("%s,%s,%s,%d,%.2f,%s,%s%n",
+                        t.getDataExecucao().format(fmt), 
+                        t.getNomeTreino(), 
+                        tipo,
+                        t.getDuracaoSegundos() / 60, 
+                        t.calcularCaloriasQueimadas(cliente), 
+                        detalhes,
+                        velocidade);
+            }
+        }
+    }
+
+    public static String gerarRankingDesafioTexto(Desafio desafio) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Ranking: ").append(desafio.getNome()).append(" ===\n\n");
         List<ParticipacaoDesafio> participacoes = desafio.getParticipacoes();
 
         if (participacoes.isEmpty()) {
-            System.out.println("Nenhum usuário participando deste desafio.");
-            return;
+            sb.append("Ainda não há participantes neste desafio.\n");
+            return sb.toString();
         }
-
-        // 1. Calcular o progresso real de cada participante
+        
         for (ParticipacaoDesafio p : participacoes) {
-            Usuario u = p.getUsuario(); 
-            // Calcula o progresso real e o armazena no objeto ParticipacaoDesafio
-            double progressoCalculado = calcularProgressoDesafio(u, desafio);
-            p.setProgresso(progressoCalculado); 
+            p.setProgresso(calcularProgressoDesafio(p.getUsuario(), desafio));
         }
+        Collections.sort(participacoes, (p1, p2) -> Double.compare(p2.getProgresso(), p1.getProgresso()));
 
-        // 2. Ordenar a lista
-        Collections.sort(participacoes, new Comparator<ParticipacaoDesafio>() {
-            @Override
-            public int compare(ParticipacaoDesafio p1, ParticipacaoDesafio p2) {
-                // Compara em ordem decrescente (do maior progresso para o menor)
-                // Esta chamada agora está correta (getProgresso)
-                return Double.compare(p2.getProgresso(), p1.getProgresso());
-            }
-        });
-
-        // 3. Exibir o ranking
         int pos = 1;
         for (ParticipacaoDesafio p : participacoes) {
-            System.out.printf("%dº Lugar: %s - Progresso: %.2f km\n",
-                    pos,
-                    p.getUsuario().getNome(),
-                    (p.getProgresso() / 1000) // Converte de metros para km
-            );
+            sb.append(pos).append("º Lugar - ").append(p.getUsuario().getNome())
+              .append(": ").append(String.format("%.2f km", p.getProgresso() / 1000.0)).append("\n");
             pos++;
         }
-        System.out.println("--- Fim do Ranking ---");
+        return sb.toString();
     }
-
-    /**
-     * --- MÉTODO AUXILIAR NOVO ---
-     * Calcula o progresso (distância) de um usuário em um desafio.
-     * Soma todas as distâncias de Corridas do usuário que ocorreram
-     * ENTRE a data de início e fim do desafio.
-     */
+    
     private static double calcularProgressoDesafio(Usuario usuario, Desafio desafio) {
         double progressoTotal = 0;
-        LocalDate inicioDesafio = desafio.getDataInicio();
-        LocalDate fimDesafio = desafio.getDataFim();
-
         for (Treino treino : usuario.getTreinos()) {
-            // Verifica se o treino é uma Corrida
             if (treino instanceof Corrida) {
-                Corrida corrida = (Corrida) treino;
-                
-                LocalDate dataCorrida = corrida.getDataExecucao().toLocalDate();
-
-                // Verifica se a data da corrida está dentro do período do desafio
-                // (assume-se que as datas são inclusivas)
-                if (!dataCorrida.isBefore(inicioDesafio) && !dataCorrida.isAfter(fimDesafio)) {
-                    progressoTotal += corrida.getDistanciaEmMetros();
+                Corrida c = (Corrida) treino;
+                java.time.LocalDate dataC = c.getDataExecucao().toLocalDate();
+                if (!dataC.isBefore(desafio.getDataInicio()) && !dataC.isAfter(desafio.getDataFim())) {
+                    progressoTotal += c.getDistanciaEmMetros();
                 }
             }
         }

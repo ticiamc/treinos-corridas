@@ -2,7 +2,6 @@ package br.com.gui;
 
 import br.com.negocio.SessaoUsuario;
 import br.com.negocio.treinos.Usuario;
-
 import javax.swing.*;
 import java.awt.*;
 
