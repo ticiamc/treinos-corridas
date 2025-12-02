@@ -20,7 +20,7 @@ public class TelaMetas {
         if (TelaComputador.controladorMeta == null) {
             TelaComputador.controladorMeta = new ControladorMeta(TelaComputador.controladorCliente.getRepositorio());
         }
-        this.controladorMeta = (ControladorMeta) TelaComputador.controladorMeta;
+        this.controladorMeta = TelaComputador.controladorMeta;
         this.usuarioLogado = SessaoUsuario.getInstance().getUsuarioLogado();
     }
 

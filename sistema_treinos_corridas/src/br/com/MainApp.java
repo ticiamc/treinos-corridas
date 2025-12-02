@@ -11,4 +11,4 @@ public class MainApp {
             GerenciadorTelas.getInstance().iniciar();
         });
     }
-}
+} 

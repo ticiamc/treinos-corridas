@@ -1,145 +1,104 @@
 package br.com.gui;
 
-import br.com.gui.TelasPlanosTreino.TelaPlanosPrincipal;
-import br.com.negocio.Fachada;
-import br.com.negocio.SessaoUsuario;
-import br.com.negocio.treinos.Notificacao;
-import br.com.negocio.treinos.Treino;
-import br.com.negocio.treinos.Usuario;
-import br.com.excecoes.CampoVazioException;
-import br.com.excecoes.UsuarioNaoEncontradoException;
-import br.com.excecoes.ValorInvalidoException;
+import br.com.dados.RepositorioClientes;
+import br.com.dados.RepositorioDesafio;
+import br.com.dados.RepositorioPlanoTreino;
+import br.com.negocio.*;
+import br.com.negocio.treinos.*;
+import br.com.excecoes.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
 
 public class TelaComputador {
 
-    // Cores e Fontes padronizadas
+    public static ControladorCliente controladorCliente;
+    public static ControladorTreino controladorTreino;
+    public static ControladorMeta controladorMeta;
+    public static ControladorDesafio controladorDesafio;
+    public static ControladorPlanoTreino controladorPlanoTreino;
+    
+    public static final String CPF_LOGADO = "000.000.000-00"; 
     private static final Color COR_FUNDO = new Color(30, 30, 30);
     private static final Color COR_DESTAQUE = new Color(74, 255, 86);
     private static final Color COR_PAINEL_LATERAL = new Color(20, 20, 20);
     private static final Color COR_BOTAO_FUNDO = new Color(50, 50, 50);
     private static final Color COR_TEXTO = new Color(240, 240, 240);
-    private static final Font FONTE_TITULO = new Font("Segoe UI", Font.BOLD, 32);
-    private static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 14);
+    private static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 16);
 
-    public TelaComputador() {
-        // Construtor vazio
+    static {
+        if (controladorCliente == null) {
+            RepositorioClientes repoCli = new RepositorioClientes();
+            RepositorioDesafio repoDesafio = new RepositorioDesafio();
+            RepositorioPlanoTreino repoPlanos = new RepositorioPlanoTreino();
+            
+            controladorCliente = new ControladorCliente(repoCli);
+            controladorTreino = new ControladorTreino(repoCli);
+            controladorMeta = new ControladorMeta(repoCli);
+            controladorDesafio = new ControladorDesafio(repoDesafio, repoCli);
+            controladorPlanoTreino = new ControladorPlanoTreino(repoCli, repoPlanos);
+            
+            if(controladorCliente.buscarCliente(CPF_LOGADO) == null) {
+                Usuario userTeste = new Usuario("Usuário Teste", 25, 70, 1.75, "teste@email.com", CPF_LOGADO);
+                controladorCliente.cadastrarCliente(userTeste);
+            }
+        }
     }
 
+    public TelaComputador() {}
+
     public JPanel criarPainelAdmin() {
-        JPanel painelGeral = new JPanel(new GridBagLayout());
+        JPanel painelGeral = new JPanel(new BorderLayout());
         painelGeral.setBackground(COR_FUNDO);
         
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
+        JPanel lateral = new JPanel();
+        lateral.setLayout(new BoxLayout(lateral, BoxLayout.Y_AXIS));
+        lateral.setBackground(COR_PAINEL_LATERAL);
+        lateral.setBorder(new EmptyBorder(20, 20, 20, 20));
+        lateral.setPreferredSize(new Dimension(200, 0));
         
-        // --- PAINEL LATERAL ---
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridheight = 4; 
-        gbc.weightx = 0.3; gbc.weighty = 1.0;
-        gbc.insets = new Insets(10, 10, 10, 10);
-
-        JPanel painelLateral = new JPanel(new BorderLayout());
-        painelLateral.setBackground(COR_PAINEL_LATERAL);
-        painelLateral.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(COR_DESTAQUE, 2),
-            new EmptyBorder(20, 20, 20, 20)
-        ));
-
-        JLabel lblTitulo = new JLabel("<html><center>IRON<br>TRACK</center></html>", SwingConstants.CENTER);
-        lblTitulo.setFont(FONTE_TITULO);
-        lblTitulo.setForeground(COR_DESTAQUE);
+        JLabel lbl = new JLabel("ADMIN");
+        lbl.setForeground(COR_DESTAQUE);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lateral.add(lbl);
+        lateral.add(Box.createVerticalStrut(30));
         
-        JLabel lblSubtitulo = new JLabel("<html><center><br>Gestão &<br>Administração</center></html>", SwingConstants.CENTER);
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblSubtitulo.setForeground(Color.GRAY);
-
-        painelLateral.add(lblTitulo, BorderLayout.CENTER);
-        painelLateral.add(lblSubtitulo, BorderLayout.NORTH);
-
-        JButton btnLogout = new JButton("SAIR (LOGOUT)");
-        btnLogout.setBackground(new Color(200, 50, 50));
-        btnLogout.setForeground(Color.WHITE);
-        btnLogout.setFocusPainted(false);
-        btnLogout.addActionListener(e -> {
+        JButton btnSair = new JButton("Sair");
+        btnSair.setBackground(Color.RED);
+        btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
             GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
         });
-        painelLateral.add(btnLogout, BorderLayout.SOUTH);
-        painelGeral.add(painelLateral, gbc);
-
-        // --- GRID DE BOTÕES ---
-        gbc.gridheight = 1; gbc.weightx = 0.35;
-        gbc.insets = new Insets(10, 5, 10, 5);
-
-        // Coluna 1
-        gbc.gridx = 1; 
-        JButton btnCadastrar = criarBotaoEstilizado("Cadastrar Atleta");
-        btnCadastrar.addActionListener(e -> abrirTelaCadastroUsuario());
-        painelGeral.add(btnCadastrar, configuracaoGrid(1, 0));
-
-        JButton btnNotificacoes = criarBotaoEstilizado("Ver Notificações");
-        btnNotificacoes.addActionListener(e -> abrirTelaNotificacoes());
-        painelGeral.add(btnNotificacoes, configuracaoGrid(1, 1));
+        lateral.add(Box.createVerticalGlue());
+        lateral.add(btnSair);
+        painelGeral.add(lateral, BorderLayout.WEST);
         
-        JButton btnDesafios = criarBotaoEstilizado("Gerenciar Desafios");
-        btnDesafios.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarDesafios().criarPainel()));
-        painelGeral.add(btnDesafios, configuracaoGrid(1, 2));
-
-        JButton btnMetas = criarBotaoEstilizado("Gerenciar Metas");
-        btnMetas.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaMetas().criarPainel()));
-        painelGeral.add(btnMetas, configuracaoGrid(1, 3));
-
-        // Coluna 2
-        gbc.gridx = 2;
-        JButton btnRelatorios = criarBotaoEstilizado("Relatórios Gerais");
-        btnRelatorios.addActionListener(e -> {
-             String cpf = JOptionPane.showInputDialog("CPF do atleta para relatório:");
-             if(cpf != null) {
-                 Usuario u = Fachada.getInstance().getControladorCliente().buscarCliente(cpf);
-                 if(u!=null) GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(u).criarPainel());
-                 else JOptionPane.showMessageDialog(painelGeral, "Não encontrado.");
-             }
-        });
-        painelGeral.add(btnRelatorios, configuracaoGrid(2, 0));
+        JPanel grid = new JPanel(new GridLayout(3, 2, 10, 10));
+        grid.setBackground(COR_FUNDO);
+        grid.setBorder(new EmptyBorder(20,20,20,20));
         
-        JButton btnPlanos = criarBotaoEstilizado("Planos de Treino");
-        btnPlanos.addActionListener(e -> {
-            TelaPlanosPrincipal telaPlanos = new TelaPlanosPrincipal(Fachada.getInstance().getControladorCliente());
-            GerenciadorTelas.getInstance().carregarTela(telaPlanos.criarPainel());
-        });
-        painelGeral.add(btnPlanos, configuracaoGrid(2, 1));
-
-        JButton btnTreinos = criarBotaoEstilizado("REGISTRAR TREINO");
-        btnTreinos.setForeground(Color.BLACK);
-        btnTreinos.setBackground(COR_DESTAQUE); 
-        btnTreinos.addActionListener(e -> abrirTelaCadastroTreino());
-        btnTreinos.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btnTreinos.setBackground(Color.WHITE); }
-            public void mouseExited(MouseEvent e) { btnTreinos.setBackground(COR_DESTAQUE); }
-        });
-        painelGeral.add(btnTreinos, configuracaoGrid(2, 2));
+        JButton btnCadUser = criarBotaoEstilizado("Cadastrar Usuário");
+        btnCadUser.addActionListener(e -> abrirTelaCadastroUsuario());
         
-        JButton btnGerenciarUsers = criarBotaoEstilizado("Listar Usuários");
+        JButton btnGerenciarUsers = criarBotaoEstilizado("Gerenciar Usuários");
         btnGerenciarUsers.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarUsuarios().criarPainel()));
-        painelGeral.add(btnGerenciarUsers, configuracaoGrid(2, 3));
 
+        JButton btnGerenciarDesafios = criarBotaoEstilizado("Gerenciar Desafios");
+        btnGerenciarDesafios.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaGerenciarDesafios().criarPainel()));
+        
+        grid.add(btnCadUser);
+        grid.add(btnGerenciarUsers);
+        grid.add(btnGerenciarDesafios);
+        painelGeral.add(grid, BorderLayout.CENTER);
         return painelGeral;
     }
 
-    // --- MÉTODOS AUXILIARES E POPUPS ---
-
     public static void abrirTelaCadastroUsuario() {
-        JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Novo Atleta", true);
-        d.setLayout(new GridLayout(7, 2, 10, 10));
+        JFrame tela = new JFrame("Novo Atleta");
+        tela.setLayout(new GridLayout(7, 2));
         JTextField nome = new JTextField();
         JTextField cpf = new JTextField();
         JTextField email = new JTextField();
@@ -147,44 +106,42 @@ public class TelaComputador {
         JTextField peso = new JTextField();
         JTextField alt = new JTextField();
         
-        d.add(new JLabel(" Nome:")); d.add(nome);
-        d.add(new JLabel(" CPF:")); d.add(cpf);
-        d.add(new JLabel(" Email:")); d.add(email);
-        d.add(new JLabel(" Idade:")); d.add(idade);
-        d.add(new JLabel(" Peso:")); d.add(peso);
-        d.add(new JLabel(" Altura:")); d.add(alt);
+        tela.add(new JLabel("Nome:")); tela.add(nome);
+        tela.add(new JLabel("CPF:")); tela.add(cpf);
+        tela.add(new JLabel("Email:")); tela.add(email);
+        tela.add(new JLabel("Idade:")); tela.add(idade);
+        tela.add(new JLabel("Peso:")); tela.add(peso);
+        tela.add(new JLabel("Altura:")); tela.add(alt);
         
         JButton btn = new JButton("Salvar");
         btn.addActionListener(e -> {
             try {
-                Fachada.getInstance().getControladorCliente().cadastrarCliente(new Usuario(
+                controladorCliente.cadastrarCliente(new Usuario(
                     nome.getText(), Integer.parseInt(idade.getText()), 
                     Double.parseDouble(peso.getText()), Double.parseDouble(alt.getText()), email.getText(), cpf.getText()));
-                JOptionPane.showMessageDialog(d, "Sucesso!");
-                d.dispose();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(d, "Erro ao cadastrar: " + ex.getMessage());
-            }
+                JOptionPane.showMessageDialog(tela, "Sucesso!");
+                tela.dispose();
+            } catch(Exception ex) { JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage()); }
         });
-
-        d.add(new JLabel("")); d.add(btn);
-        d.setSize(450, 400);
-        d.setLocationRelativeTo(null);
-        d.setVisible(true);
+        tela.add(btn);
+        tela.setSize(400,400);
+        tela.setVisible(true);
     }
-
-    public static void abrirTelaCadastroTreino() {
-        abrirJanelaTreinoBase(null);
-    }
-
-    public static void abrirTelaCadastroTreinoUsuarioLogado() {
+    
+    // Método sobrecarregado para aceitar callback de atualização
+    public static void abrirTelaCadastroTreinoUsuarioLogado(Runnable onSucesso) {
         Usuario logado = SessaoUsuario.getInstance().getUsuarioLogado();
-        if (logado != null) abrirJanelaTreinoBase(logado);
+        if (logado != null) abrirJanelaTreinoBase(logado, onSucesso);
         else JOptionPane.showMessageDialog(null, "Erro: Nenhum usuário logado.");
     }
 
-    private static void abrirJanelaTreinoBase(Usuario usuarioPreDefinido) {
-        JDialog tela = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Registrar Treino", true);
+    // Método antigo para manter compatibilidade (chama o novo com null)
+    public static void abrirTelaCadastroTreinoUsuarioLogado() {
+        abrirTelaCadastroTreinoUsuarioLogado(null);
+    }
+
+    private static void abrirJanelaTreinoBase(Usuario usuarioPreDefinido, Runnable onSucesso) {
+        JFrame tela = new JFrame("Registrar Treino");
         tela.getContentPane().setBackground(COR_FUNDO);
         tela.setLayout(new BorderLayout());
 
@@ -192,13 +149,6 @@ public class TelaComputador {
         painelCentral.setLayout(new BoxLayout(painelCentral, BoxLayout.Y_AXIS));
         painelCentral.setBackground(COR_FUNDO);
         painelCentral.setBorder(new EmptyBorder(20, 50, 20, 50));
-
-        JTextField campoCpf = null;
-        if (usuarioPreDefinido == null) {
-            campoCpf = criarInputEstilizado("CPF do Aluno");
-            painelCentral.add(campoCpf);
-            painelCentral.add(Box.createVerticalStrut(15));
-        }
 
         JTextField campoNome = criarInputEstilizado("Nome do Treino");
         JTextField campoData = criarInputEstilizado("Data (dd/MM/yyyy)");
@@ -215,25 +165,25 @@ public class TelaComputador {
         JPanel painelDinamico = new JPanel();
         painelDinamico.setLayout(new BoxLayout(painelDinamico, BoxLayout.Y_AXIS));
         painelDinamico.setBackground(COR_FUNDO);
-        painelDinamico.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(COR_DESTAQUE), " Detalhes Específicos ", 
-            0, 0, FONTE_BOTAO, COR_DESTAQUE));
-        
         painelCentral.add(painelDinamico);
         tela.add(painelCentral, BorderLayout.CENTER);
 
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 20));
         painelBotoes.setBackground(COR_FUNDO);
-        
         JButton btnCorrida = criarBotaoEstilizado("Corrida");
         JButton btnIntervalado = criarBotaoEstilizado("Intervalado");
         JButton btnFinalizar = criarBotaoEstilizado("SALVAR");
         btnFinalizar.setBackground(COR_DESTAQUE);
         btnFinalizar.setForeground(Color.BLACK);
+        
+        JButton btnCancelar = criarBotaoEstilizado("Cancelar");
+        btnCancelar.setBackground(new Color(180, 50, 50));
+        btnCancelar.addActionListener(e -> tela.dispose());
 
         painelBotoes.add(btnCorrida);
         painelBotoes.add(btnIntervalado);
         painelBotoes.add(btnFinalizar);
+        painelBotoes.add(btnCancelar);
         tela.add(painelBotoes, BorderLayout.SOUTH);
 
         final JTextField[] campoDistancia = {null};
@@ -249,7 +199,6 @@ public class TelaComputador {
             painelDinamico.add(lbl); painelDinamico.add(campo);
             campoDistancia[0] = campo;
             painelDinamico.revalidate(); painelDinamico.repaint();
-            tela.pack();
         });
 
         btnIntervalado.addActionListener(e -> {
@@ -257,88 +206,73 @@ public class TelaComputador {
             painelDinamico.removeAll();
             JLabel lbl1 = new JLabel("Séries:"); lbl1.setForeground(Color.WHITE);
             JTextField c1 = criarInputEstilizado("0");
-            JLabel lbl2 = new JLabel("Descanso (seg):"); lbl2.setForeground(Color.WHITE);
+            JLabel lbl2 = new JLabel("Descanso (s):"); lbl2.setForeground(Color.WHITE);
             JTextField c2 = criarInputEstilizado("0");
             painelDinamico.add(lbl1); painelDinamico.add(c1);
             painelDinamico.add(Box.createVerticalStrut(10));
             painelDinamico.add(lbl2); painelDinamico.add(c2);
             campoSeries[0] = c1; campoDescanso[0] = c2;
             painelDinamico.revalidate(); painelDinamico.repaint();
-            tela.pack();
         });
 
-        JTextField finalCampoCpf = campoCpf;
-        
         btnFinalizar.addActionListener(e -> {
             try {
-                String cpfAlvo = (usuarioPreDefinido != null) ? usuarioPreDefinido.getCpf() : finalCampoCpf.getText();
-                if (tipoTreino[0] == null) throw new ValorInvalidoException("Selecione o tipo de treino!");
+                if (tipoTreino[0] == null) throw new ValorInvalidoException("Selecione o tipo!");
+                LocalDate data = LocalDate.parse(campoData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                int duracao = Integer.parseInt(campoDuracao.getText()) * 60;
                 
-                int dur = Integer.parseInt(campoDuracao.getText()) * 60;
-                double dist = 0; int ser = 0, desc = 0;
-                
-                if (tipoTreino[0].equals("corrida")) dist = Double.parseDouble(campoDistancia[0].getText().replace(",","."));
-                else {
-                    ser = Integer.parseInt(campoSeries[0].getText());
-                    desc = Integer.parseInt(campoDescanso[0].getText());
+                if (tipoTreino[0].equals("corrida")) {
+                    double dist = Double.parseDouble(campoDistancia[0].getText().replace(",", "."));
+                    controladorTreino.cadastrarTreino(usuarioPreDefinido.getCpf(), "Corrida", data, duracao, campoNome.getText(), dist, 0, 0);
+                } else {
+                    int ser = Integer.parseInt(campoSeries[0].getText());
+                    int desc = Integer.parseInt(campoDescanso[0].getText());
+                    controladorTreino.cadastrarTreino(usuarioPreDefinido.getCpf(), "Intervalado", data, duracao, campoNome.getText(), 0, ser, desc);
                 }
-
-                Fachada.getInstance().getControladorTreino().cadastrarTreino(cpfAlvo, 
-                    tipoTreino[0].equals("corrida") ? "Corrida" : "Intervalado", 
-                    LocalDate.parse(campoData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy")), 
-                    dur, campoNome.getText(), dist, ser, desc);
-
-                JOptionPane.showMessageDialog(tela, "Treino registrado!");
+                JOptionPane.showMessageDialog(tela, "Registrado!");
                 tela.dispose();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage());
-            }
+                
+                // EXECUTA O CALLBACK DE ATUALIZAÇÃO (SE HOUVER)
+                if (onSucesso != null) {
+                    onSucesso.run();
+                }
+                
+            } catch (Exception ex) { JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage()); }
         });
-        tela.setSize(500, 600);
-        tela.setLocationRelativeTo(null);
+        tela.setSize(500, 700);
+        tela.setVisible(true);
+    }
+    
+    public static void abrirTelaNotificacoes() {
+        Usuario u = SessaoUsuario.getInstance().getUsuarioLogado();
+        if (u == null) return;
+        JFrame tela = new JFrame("Notificações");
+        tela.getContentPane().setBackground(COR_FUNDO);
+        DefaultListModel<String> model = new DefaultListModel<>();
+        for(Notificacao n : u.getNotificacoes()) model.addElement((n.isLida() ? "[Lida] " : "[NOVA] ") + n.toString());
+        
+        tela.add(new JScrollPane(new JList<>(model)));
+        JButton btnLimpar = new JButton("Limpar");
+        btnLimpar.addActionListener(e -> { u.getNotificacoes().clear(); tela.dispose(); });
+        tela.add(btnLimpar, BorderLayout.SOUTH);
+        tela.setSize(400,300);
         tela.setVisible(true);
     }
 
-    public static void abrirTelaNotificacoes() {
-        // Implementação simplificada usando Dialogo
-        Usuario u = SessaoUsuario.getInstance().isUsuarioLogado() ? 
-            SessaoUsuario.getInstance().getUsuarioLogado() : 
-            Fachada.getInstance().getControladorCliente().buscarCliente(JOptionPane.showInputDialog("CPF:"));
-
-        if (u == null) return;
-
-        JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Notificações", true);
-        DefaultListModel<String> model = new DefaultListModel<>();
-        for(Notificacao n : u.getNotificacoes()) model.addElement(n.toString());
-        d.add(new JScrollPane(new JList<>(model)));
-        
-        JButton btnOk = new JButton("Marcar como Lidas");
-        btnOk.addActionListener(e -> {
-            Fachada.getInstance().getControladorCliente().verNotificacoes(u);
-            d.dispose();
-        });
-        d.add(btnOk, BorderLayout.SOUTH);
-        d.setSize(400,300);
-        d.setLocationRelativeTo(null);
-        d.setVisible(true);
+    public static void abrirTelaHistorico(Usuario u) {
+        GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(u).criarPainel());
     }
 
-    private static GridBagConstraints configuracaoGrid(int x, int y) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = x; gbc.gridy = y; gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0; gbc.weighty = 1.0; gbc.insets = new Insets(10, 5, 10, 10);
-        return gbc;
-    }
-
+    public static void TelaMetas() { GerenciadorTelas.getInstance().carregarTela(new TelaMetas().criarPainel()); }
+    public static void TelaDesafios() { GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel()); }
+    
     private static JButton criarBotaoEstilizado(String texto) {
         JButton btn = new JButton(texto);
         btn.setFont(FONTE_BOTAO);
         btn.setForeground(COR_TEXTO);
         btn.setBackground(COR_BOTAO_FUNDO);
-        btn.setFocusPainted(false);
         return btn;
     }
-    
     private static JTextField criarInputEstilizado(String titulo) {
         JTextField campo = new JTextField();
         campo.setBorder(BorderFactory.createTitledBorder(null, titulo, 0, 0, new Font("Segoe UI", Font.PLAIN, 12), Color.WHITE));
