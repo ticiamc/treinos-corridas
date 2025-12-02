@@ -24,12 +24,9 @@ public class TelaRelatorios {
         areaTexto.setEditable(false);
         areaTexto.setFont(new Font("Consolas", Font.PLAIN, 12));
         areaTexto.setText(Relatorio.gerarRelatorioAtividadesTexto(usuario));
-        
-        // --- ESTILIZAÇÃO DO TEXT AREA ---
         areaTexto.setBackground(new Color(40, 40, 40));
         areaTexto.setForeground(new Color(230, 230, 230));
         areaTexto.setBorder(new EmptyBorder(10,10,10,10));
-        // --------------------------------
 
         JScrollPane scroll = new JScrollPane(areaTexto);
         scroll.setBorder(BorderFactory.createLineBorder(new Color(60,60,60)));
@@ -38,34 +35,47 @@ public class TelaRelatorios {
         JPanel botoes = new JPanel();
         botoes.setBackground(new Color(30, 30, 30));
 
-        JButton btnExportar = new JButton("Exportar para CSV");
-        btnExportar.setBackground(new Color(74, 255, 86));
-        btnExportar.setForeground(Color.BLACK);
-        btnExportar.setFocusPainted(false);
-        
-        btnExportar.addActionListener(e -> {
+        JButton btnExportarExcel = new JButton("Exportar Excel");
+        estilizarBotao(btnExportarExcel, new Color(74, 255, 86), Color.BLACK);
+        btnExportarExcel.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
-            fc.setSelectedFile(new java.io.File("meu_historico_treinos.csv"));
-            int res = fc.showSaveDialog(painel);
-            if (res == JFileChooser.APPROVE_OPTION) {
+            fc.setSelectedFile(new java.io.File("relatorio.xls"));
+            if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
-                    Relatorio.exportarRelatorioAtividadesCSV(usuario, fc.getSelectedFile().getAbsolutePath());
-                    JOptionPane.showMessageDialog(painel, "Arquivo exportado com sucesso!");
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage());
-                }
+                    Relatorio.exportarRelatorioExcelLindo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    JOptionPane.showMessageDialog(painel, "Excel gerado com sucesso!");
+                } catch (IOException ex) { JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage()); }
+            }
+        });
+
+        JButton btnExportarPDF = new JButton("Exportar PDF");
+        estilizarBotao(btnExportarPDF, new Color(255, 100, 100), Color.BLACK);
+        btnExportarPDF.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            fc.setSelectedFile(new java.io.File("relatorio.pdf"));
+            if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    Relatorio.exportarPDFNativo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    JOptionPane.showMessageDialog(painel, "PDF gerado com sucesso!");
+                } catch (IOException ex) { JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage()); }
             }
         });
 
         JButton btnVoltar = new JButton("Voltar");
-        btnVoltar.setBackground(new Color(60, 60, 60));
-        btnVoltar.setForeground(Color.WHITE);
-        btnVoltar.setFocusPainted(false);
+        estilizarBotao(btnVoltar, new Color(60, 60, 60), Color.WHITE);
         btnVoltar.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario()));
 
         botoes.add(btnVoltar);
-        botoes.add(btnExportar);
+        botoes.add(btnExportarExcel);
+        botoes.add(btnExportarPDF);
         painel.add(botoes, BorderLayout.SOUTH);
         return painel;
+    }
+    
+    private void estilizarBotao(JButton btn, Color bg, Color fg) {
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
     }
 }

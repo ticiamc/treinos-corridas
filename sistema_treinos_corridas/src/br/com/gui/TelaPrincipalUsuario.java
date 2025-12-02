@@ -28,31 +28,40 @@ public class TelaPrincipalUsuario {
         menu.add(lbl);
         menu.add(Box.createVerticalStrut(20));
 
-        adicionarBotao(menu, "Meu Perfil", e -> new TelaPerfilUsuario());
-        menu.add(Box.createVerticalStrut(10));
-
+        // 1. Registrar Treino
         adicionarBotao(menu, "Registrar Treino", e -> TelaComputador.abrirTelaCadastroTreinoUsuarioLogado(() -> {
             GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario());
         }));
         menu.add(Box.createVerticalStrut(10));
-        
-        adicionarBotao(menu, "Meu Histórico", e -> {
-            if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaHistoricoTreinos(logado).criarPainel());
-        });
-        menu.add(Box.createVerticalStrut(10));
-        
-        adicionarBotao(menu, "Minhas Metas", e -> TelaComputador.TelaMetas());
-        menu.add(Box.createVerticalStrut(10));
-        
-        adicionarBotao(menu, "Desafios", e -> TelaComputador.TelaDesafios());
-        menu.add(Box.createVerticalStrut(10));
-        
+
+        // 2. Planos de Treino
         adicionarBotao(menu, "Planos de Treino", e -> {
              GerenciadorTelas.getInstance().carregarTela(new br.com.gui.TelasPlanosTreino.TelaPlanosPrincipal(TelaComputador.controladorCliente).criarPainel());
         });
         menu.add(Box.createVerticalStrut(10));
+
+        // 3. Minhas Metas
+        adicionarBotao(menu, "Minhas Metas", e -> TelaComputador.TelaMetas());
+        menu.add(Box.createVerticalStrut(10));
         
+        // 4. Desafios
+        adicionarBotao(menu, "Desafios", e -> TelaComputador.TelaDesafios());
+        menu.add(Box.createVerticalStrut(10));
+
+        // 5. Notificações
         adicionarBotao(menu, "Notificações", e -> TelaComputador.abrirTelaNotificacoes());
+        menu.add(Box.createVerticalStrut(10));
+
+        // 6. Meu Histórico
+        adicionarBotao(menu, "Meu Histórico", e -> {
+            if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaHistoricoTreinos(logado).criarPainel());
+        });
+        menu.add(Box.createVerticalStrut(10));
+
+        // 7. Meu Perfil (Por último)
+        adicionarBotao(menu, "Meu Perfil", e -> new TelaPerfilUsuario());
+        
+        // ----------------------------------------------
 
         menu.add(Box.createVerticalGlue());
         JButton sair = new JButton("Sair");
@@ -99,6 +108,7 @@ public class TelaPrincipalUsuario {
         b.setMaximumSize(new Dimension(180, 40));
         b.setBackground(new Color(50,50,50));
         b.setForeground(Color.WHITE);
+        b.setFocusPainted(false);
         b.addActionListener(l);
         p.add(b);
     }

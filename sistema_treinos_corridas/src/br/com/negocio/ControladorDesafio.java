@@ -5,8 +5,11 @@ import br.com.dados.IRepositorioDesafio;
 import br.com.negocio.treinos.Desafio;
 import br.com.negocio.treinos.ParticipacaoDesafio;
 import br.com.negocio.treinos.Usuario;
+import br.com.negocio.treinos.Notificacao; // Import necessário
 import java.time.LocalDate; 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class ControladorDesafio {
     private IRepositorioDesafio repositorioDesafio;
@@ -17,14 +20,27 @@ public class ControladorDesafio {
         this.repositorioCliente = repositorioCliente;
     }
 
-    // Atualizado para receber o criador
     public void cadastrarDesafio(String nome, String descricao, LocalDate dataInicio, LocalDate dataFim, Usuario criador) throws Exception {
         if (dataInicio.isAfter(dataFim)) throw new Exception("Data de início não pode ser posterior à data final.");
+        
         Desafio desafio = new Desafio(nome, descricao, dataInicio, dataFim, criador);
         repositorioDesafio.cadastrar(desafio);
+        
+        // --- NOVO: REQ21 - NOTIFICAR TODOS OS USUÁRIOS ---
+        List<Usuario> todosUsuarios = repositorioCliente.listarTodos();
+        for (Usuario u : todosUsuarios) {
+            // Opcional: Não notificar o próprio criador
+            if (!u.getCpf().equals(criador.getCpf())) {
+                u.adicionarNotificacao(new Notificacao(
+                    UUID.randomUUID(),
+                    "Novo Desafio Criado: '" + nome + "'. Venha participar!",
+                    LocalDateTime.now()
+                ));
+            }
+        }
+        // ------------------------------------------------
     }
 
-    // Novo método para editar desafio existente
     public void atualizarDesafio(int idDesafio, String nome, String descricao, LocalDate inicio, LocalDate fim) throws Exception {
         Desafio d = repositorioDesafio.buscar(idDesafio);
         if (d == null) throw new Exception("Desafio não encontrado.");
