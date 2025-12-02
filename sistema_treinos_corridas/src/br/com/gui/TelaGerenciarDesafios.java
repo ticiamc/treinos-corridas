@@ -26,29 +26,48 @@ public class TelaGerenciarDesafios {
         for(Desafio d : todos) model.addElement(d);
 
         JList<Desafio> lista = new JList<>(model);
+        lista.setBackground(new Color(50, 50, 50));
+        lista.setForeground(Color.WHITE);
+        
         lista.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 Desafio d = (Desafio) value;
                 String status = LocalDate.now().isAfter(d.getDataFim()) ? "[CONCLUÍDO] " : "[EM ANDAMENTO] ";
-                String txt = status + d.getNome() + " (Participantes: " + d.getParticipacoes().size() + ")";
-                return super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
+                setText(status + d.getNome() + " (Part.: " + d.getParticipacoes().size() + ")");
+                
+                if (isSelected) {
+                    setBackground(new Color(74, 255, 86));
+                    setForeground(Color.BLACK);
+                } else {
+                    setBackground(new Color(50, 50, 50));
+                    setForeground(LocalDate.now().isAfter(d.getDataFim()) ? Color.GRAY : Color.WHITE);
+                }
+                return this;
             }
         });
 
-        painel.add(new JScrollPane(lista), BorderLayout.WEST);
+        JScrollPane scrollLista = new JScrollPane(lista);
+        scrollLista.setPreferredSize(new Dimension(250, 0));
+        scrollLista.setBorder(BorderFactory.createLineBorder(new Color(60,60,60)));
+        painel.add(scrollLista, BorderLayout.WEST);
         
         // Área de Detalhes
         JTextArea areaDetalhes = new JTextArea();
         areaDetalhes.setEditable(false);
         areaDetalhes.setFont(new Font("Consolas", Font.PLAIN, 12));
+        areaDetalhes.setBackground(new Color(40, 40, 40)); // Fundo escuro
+        areaDetalhes.setForeground(new Color(220, 220, 220)); // Texto claro
+        areaDetalhes.setBorder(new EmptyBorder(10,10,10,10));
+        
         painel.add(new JScrollPane(areaDetalhes), BorderLayout.CENTER);
 
         // Botões de Ação
         JPanel botoes = new JPanel();
         botoes.setBackground(new Color(30, 30, 30));
 
-        JButton btnVerDetalhes = new JButton("Ver Detalhes / Ranking");
+        JButton btnVerDetalhes = criarBotao("Ver Detalhes");
         btnVerDetalhes.addActionListener(e -> {
             Desafio sel = lista.getSelectedValue();
             if(sel != null) {
@@ -60,35 +79,31 @@ public class TelaGerenciarDesafios {
                 sb.append("Período: ").append(sel.getDataInicio()).append(" até ").append(sel.getDataFim()).append("\n");
                 sb.append("Descrição: ").append(sel.getDescricao()).append("\n\n");
                 
-                // Gera o ranking usando a lógica existente no Relatorio
                 String ranking = Relatorio.gerarRankingDesafioTexto(sel);
                 sb.append(ranking);
                 
                 if (concluido && !sel.getParticipacoes().isEmpty()) {
-                    // O primeiro do ranking (já ordenado pelo Relatorio) é o vencedor
-                    // Nota: O Relatorio ordena a lista interna do desafio.
                     String vencedor = sel.getParticipacoes().get(0).getUsuario().getNome();
                     sb.append("\n🏆 VENCEDOR: ").append(vencedor);
                 }
-                
                 areaDetalhes.setText(sb.toString());
             }
         });
 
-        JButton btnEditar = new JButton("Editar Desafio");
+        JButton btnEditar = criarBotao("Editar");
         btnEditar.addActionListener(e -> {
             Desafio sel = lista.getSelectedValue();
             if(sel != null) abrirDialogoEditar(sel, areaDetalhes);
             else JOptionPane.showMessageDialog(painel, "Selecione um desafio.");
         });
         
-        JButton btnCriar = new JButton("Criar Novo");
-        btnCriar.addActionListener(e -> {
-            TelaDesafios.abrirDialogoCriarDesafio();
-            // Atualizar lista manual ou pedir refresh 
-        });
+        JButton btnCriar = criarBotao("Criar Novo");
+        btnCriar.setBackground(new Color(74, 255, 86));
+        btnCriar.setForeground(Color.BLACK);
+        btnCriar.addActionListener(e -> TelaDesafios.abrirDialogoCriarDesafio());
 
-        JButton btnVoltar = new JButton("Voltar");
+        JButton btnVoltar = criarBotao("Voltar");
+        btnVoltar.setBackground(new Color(60, 60, 60));
         btnVoltar.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaComputador().criarPainelAdmin()));
 
         botoes.add(btnVoltar);
@@ -101,7 +116,17 @@ public class TelaGerenciarDesafios {
         return painel;
     }
     
+    private JButton criarBotao(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setBackground(new Color(50, 50, 50));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        return btn;
+    }
+
     private void abrirDialogoEditar(Desafio d, JTextArea areaLog) {
+        // Mantém o diálogo padrão, mas pode ser estilizado se necessário
         JDialog diag = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Editar Desafio", true);
         diag.setLayout(new GridLayout(5,2));
         diag.setSize(400, 250);

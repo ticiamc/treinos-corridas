@@ -7,7 +7,7 @@ public class GerenciadorTelas {
     private JFrame janelaPrincipal;
 
     private GerenciadorTelas() {
-        janelaPrincipal = new JFrame("Iron Track - Sistema de Treinos");
+        janelaPrincipal = new JFrame("Iron Track - Sistema de Treinos e Corridas");
         janelaPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         janelaPrincipal.setSize(1000, 700);
         janelaPrincipal.setLocationRelativeTo(null);

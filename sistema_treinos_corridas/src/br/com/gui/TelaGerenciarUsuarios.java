@@ -20,31 +20,47 @@ public class TelaGerenciarUsuarios {
 
         // Lista de Usuários
         DefaultListModel<Usuario> model = new DefaultListModel<>();
-        
         List<Usuario> todos = TelaComputador.controladorCliente.getRepositorio().listarTodos();
-        
         for(Usuario u : todos) model.addElement(u);
 
         JList<Usuario> lista = new JList<>(model);
+        lista.setBackground(new Color(50, 50, 50)); // Fundo da lista
+        lista.setForeground(Color.WHITE);           // Texto da lista
+        
         lista.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 Usuario u = (Usuario) value;
                 String txt = String.format("%s (CPF: %s) - %s", u.getNome(), u.getCpf(), u.getEmail());
-                return super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
+                setText(txt);
+                
+                // Estilização do item
+                if (isSelected) {
+                    setBackground(new Color(74, 255, 86));
+                    setForeground(Color.BLACK);
+                } else {
+                    setBackground(new Color(50, 50, 50));
+                    setForeground(Color.WHITE);
+                }
+                return this;
             }
         });
         
-        painel.add(new JScrollPane(lista), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(lista);
+        scroll.getViewport().setBackground(new Color(30, 30, 30));
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        painel.add(scroll, BorderLayout.CENTER);
 
         JPanel botoes = new JPanel();
         botoes.setBackground(new Color(30, 30, 30));
 
         JButton btnEditar = new JButton("Editar Usuário Selecionado");
+        estilizarBotao(btnEditar, new Color(74, 255, 86), Color.BLACK);
+        
         btnEditar.addActionListener(e -> {
             Usuario sel = lista.getSelectedValue();
             if(sel != null) {
-                // Abre a tela de perfil já carregada com este usuário
                 new TelaPerfilUsuario(sel); 
             } else {
                 JOptionPane.showMessageDialog(painel, "Selecione um usuário.");
@@ -52,6 +68,7 @@ public class TelaGerenciarUsuarios {
         });
 
         JButton btnVoltar = new JButton("Voltar");
+        estilizarBotao(btnVoltar, new Color(60, 60, 60), Color.WHITE);
         btnVoltar.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaComputador().criarPainelAdmin()));
 
         botoes.add(btnVoltar);
@@ -59,5 +76,12 @@ public class TelaGerenciarUsuarios {
         painel.add(botoes, BorderLayout.SOUTH);
 
         return painel;
+    }
+    
+    private void estilizarBotao(JButton btn, Color bg, Color fg) {
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
     }
 }

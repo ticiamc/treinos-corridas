@@ -22,12 +22,12 @@ public class TelaComputador {
     public static ControladorPlanoTreino controladorPlanoTreino;
     
     public static final String CPF_LOGADO = "000.000.000-00"; 
-    private static final Color COR_FUNDO = new Color(30, 30, 30);
-    private static final Color COR_DESTAQUE = new Color(74, 255, 86);
-    private static final Color COR_PAINEL_LATERAL = new Color(20, 20, 20);
-    private static final Color COR_BOTAO_FUNDO = new Color(50, 50, 50);
-    private static final Color COR_TEXTO = new Color(240, 240, 240);
-    private static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 16);
+    public static final Color COR_FUNDO = new Color(30, 30, 30);
+    public static final Color COR_DESTAQUE = new Color(74, 255, 86);
+    public static final Color COR_PAINEL_LATERAL = new Color(20, 20, 20);
+    public static final Color COR_BOTAO_FUNDO = new Color(50, 50, 50);
+    public static final Color COR_TEXTO = new Color(240, 240, 240);
+    public static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 16);
 
     static {
         if (controladorCliente == null) {
@@ -68,6 +68,7 @@ public class TelaComputador {
         
         JButton btnSair = new JButton("Sair");
         btnSair.setBackground(Color.RED);
+        btnSair.setForeground(Color.WHITE);
         btnSair.addActionListener(e -> {
             SessaoUsuario.getInstance().logout();
             GerenciadorTelas.getInstance().carregarTela(new TelaLogin().criarPainelLogin());
@@ -96,46 +97,95 @@ public class TelaComputador {
         return painelGeral;
     }
 
+    // --- CORREÇÃO 1: Tela de Cadastro de Usuário (Admin) ---
     public static void abrirTelaCadastroUsuario() {
         JFrame tela = new JFrame("Novo Atleta");
-        tela.setLayout(new GridLayout(7, 2));
-        JTextField nome = new JTextField();
-        JTextField cpf = new JTextField();
-        JTextField email = new JTextField();
-        JTextField idade = new JTextField();
-        JTextField peso = new JTextField();
-        JTextField alt = new JTextField();
+        tela.getContentPane().setBackground(COR_FUNDO);
+        tela.setLayout(new GridLayout(7, 2, 10, 10));
+        ((JPanel)tela.getContentPane()).setBorder(new EmptyBorder(20,20,20,20));
+
+        JTextField nome = criarInputEstilizado("Nome");
+        JTextField cpf = criarInputEstilizado("CPF (000.000.000-00)");
+        JTextField email = criarInputEstilizado("Email");
+        JTextField idade = criarInputEstilizado("Idade");
+        JTextField peso = criarInputEstilizado("Peso (kg)");
+        JTextField alt = criarInputEstilizado("Altura (m)");
         
-        tela.add(new JLabel("Nome:")); tela.add(nome);
-        tela.add(new JLabel("CPF:")); tela.add(cpf);
-        tela.add(new JLabel("Email:")); tela.add(email);
-        tela.add(new JLabel("Idade:")); tela.add(idade);
-        tela.add(new JLabel("Peso:")); tela.add(peso);
-        tela.add(new JLabel("Altura:")); tela.add(alt);
+        tela.add(criarLabel("Nome:")); tela.add(nome);
+        tela.add(criarLabel("CPF:")); tela.add(cpf);
+        tela.add(criarLabel("Email:")); tela.add(email);
+        tela.add(criarLabel("Idade:")); tela.add(idade);
+        tela.add(criarLabel("Peso:")); tela.add(peso);
+        tela.add(criarLabel("Altura:")); tela.add(alt);
         
-        JButton btn = new JButton("Salvar");
+        JButton btn = criarBotaoEstilizado("Salvar");
+        btn.setBackground(COR_DESTAQUE);
+        btn.setForeground(Color.BLACK);
+        
         btn.addActionListener(e -> {
             try {
                 controladorCliente.cadastrarCliente(new Usuario(
                     nome.getText(), Integer.parseInt(idade.getText()), 
                     Double.parseDouble(peso.getText()), Double.parseDouble(alt.getText()), email.getText(), cpf.getText()));
-                JOptionPane.showMessageDialog(tela, "Sucesso!");
+                JOptionPane.showMessageDialog(tela, "Usuário cadastrado com sucesso!");
                 tela.dispose();
             } catch(Exception ex) { JOptionPane.showMessageDialog(tela, "Erro: " + ex.getMessage()); }
         });
+        tela.add(new JLabel("")); // Espaçador
         tela.add(btn);
-        tela.setSize(400,400);
+        tela.setSize(450,500);
+        tela.setLocationRelativeTo(null);
         tela.setVisible(true);
     }
     
-    // Método sobrecarregado para aceitar callback de atualização
+    // --- CORREÇÃO 2: Tela de Notificações ---
+    public static void abrirTelaNotificacoes() {
+        Usuario u = SessaoUsuario.getInstance().getUsuarioLogado();
+        if (u == null) return;
+        
+        JFrame tela = new JFrame("Notificações");
+        tela.getContentPane().setBackground(COR_FUNDO);
+        tela.setLayout(new BorderLayout());
+        
+        DefaultListModel<String> model = new DefaultListModel<>();
+        for(Notificacao n : u.getNotificacoes()) {
+            model.addElement((n.isLida() ? "[Lida] " : "[NOVA] ") + n.toString());
+        }
+        
+        JList<String> lista = new JList<>(model);
+        lista.setBackground(new Color(50, 50, 50));
+        lista.setForeground(COR_TEXTO);
+        lista.setFont(new Font("Consolas", Font.PLAIN, 12));
+        lista.setSelectionBackground(COR_DESTAQUE);
+        lista.setSelectionForeground(Color.BLACK);
+        
+        JScrollPane scroll = new JScrollPane(lista);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(60,60,60)));
+        tela.add(scroll, BorderLayout.CENTER);
+        
+        JButton btnLimpar = criarBotaoEstilizado("Limpar Tudo");
+        btnLimpar.setBackground(new Color(180, 50, 50)); // Vermelho
+        btnLimpar.addActionListener(e -> { 
+            u.getNotificacoes().clear(); 
+            tela.dispose(); 
+        });
+        
+        JPanel pnlSul = new JPanel();
+        pnlSul.setBackground(COR_FUNDO);
+        pnlSul.add(btnLimpar);
+        tela.add(pnlSul, BorderLayout.SOUTH);
+        
+        tela.setSize(500,400);
+        tela.setLocationRelativeTo(null);
+        tela.setVisible(true);
+    }
+
     public static void abrirTelaCadastroTreinoUsuarioLogado(Runnable onSucesso) {
         Usuario logado = SessaoUsuario.getInstance().getUsuarioLogado();
         if (logado != null) abrirJanelaTreinoBase(logado, onSucesso);
         else JOptionPane.showMessageDialog(null, "Erro: Nenhum usuário logado.");
     }
 
-    // Método antigo para manter compatibilidade (chama o novo com null)
     public static void abrirTelaCadastroTreinoUsuarioLogado() {
         abrirTelaCadastroTreinoUsuarioLogado(null);
     }
@@ -232,7 +282,6 @@ public class TelaComputador {
                 JOptionPane.showMessageDialog(tela, "Registrado!");
                 tela.dispose();
                 
-                // EXECUTA O CALLBACK DE ATUALIZAÇÃO (SE HOUVER)
                 if (onSucesso != null) {
                     onSucesso.run();
                 }
@@ -243,22 +292,6 @@ public class TelaComputador {
         tela.setVisible(true);
     }
     
-    public static void abrirTelaNotificacoes() {
-        Usuario u = SessaoUsuario.getInstance().getUsuarioLogado();
-        if (u == null) return;
-        JFrame tela = new JFrame("Notificações");
-        tela.getContentPane().setBackground(COR_FUNDO);
-        DefaultListModel<String> model = new DefaultListModel<>();
-        for(Notificacao n : u.getNotificacoes()) model.addElement((n.isLida() ? "[Lida] " : "[NOVA] ") + n.toString());
-        
-        tela.add(new JScrollPane(new JList<>(model)));
-        JButton btnLimpar = new JButton("Limpar");
-        btnLimpar.addActionListener(e -> { u.getNotificacoes().clear(); tela.dispose(); });
-        tela.add(btnLimpar, BorderLayout.SOUTH);
-        tela.setSize(400,300);
-        tela.setVisible(true);
-    }
-
     public static void abrirTelaHistorico(Usuario u) {
         GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(u).criarPainel());
     }
@@ -266,19 +299,31 @@ public class TelaComputador {
     public static void TelaMetas() { GerenciadorTelas.getInstance().carregarTela(new TelaMetas().criarPainel()); }
     public static void TelaDesafios() { GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel()); }
     
+    // --- Métodos Auxiliares de Estilo ---
     private static JButton criarBotaoEstilizado(String texto) {
         JButton btn = new JButton(texto);
         btn.setFont(FONTE_BOTAO);
         btn.setForeground(COR_TEXTO);
         btn.setBackground(COR_BOTAO_FUNDO);
+        btn.setFocusPainted(false);
         return btn;
     }
+    
     private static JTextField criarInputEstilizado(String titulo) {
         JTextField campo = new JTextField();
-        campo.setBorder(BorderFactory.createTitledBorder(null, titulo, 0, 0, new Font("Segoe UI", Font.PLAIN, 12), Color.WHITE));
+        campo.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(100,100,100)), 
+            titulo, 0, 0, new Font("Segoe UI", Font.PLAIN, 12), Color.WHITE));
         campo.setBackground(new Color(60, 60, 60));
         campo.setForeground(Color.WHITE);
         campo.setCaretColor(COR_DESTAQUE);
         return campo;
+    }
+    
+    private static JLabel criarLabel(String texto) {
+        JLabel lbl = new JLabel(texto);
+        lbl.setForeground(Color.WHITE);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        return lbl;
     }
 }

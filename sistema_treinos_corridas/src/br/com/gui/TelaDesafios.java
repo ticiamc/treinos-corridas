@@ -7,6 +7,7 @@ import br.com.negocio.treinos.Relatorio;
 import br.com.negocio.treinos.Usuario;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -37,8 +38,7 @@ public class TelaDesafios {
 
         if (usuarioLogado != null) {
             JButton btnCriar = new JButton("+ Criar Novo");
-            btnCriar.setBackground(new Color(74, 255, 86));
-            btnCriar.setForeground(Color.BLACK);
+            estilizarBotao(btnCriar, new Color(74, 255, 86), Color.BLACK);
             btnCriar.addActionListener(e -> abrirDialogoCriarDesafio());
             topo.add(btnCriar, BorderLayout.EAST);
         }
@@ -53,6 +53,7 @@ public class TelaDesafios {
         JPanel rodape = new JPanel();
         rodape.setBackground(new Color(30,30,30));
         JButton btnVoltar = new JButton("Voltar ao Menu");
+        estilizarBotao(btnVoltar, new Color(50,50,50), Color.WHITE);
         btnVoltar.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(new TelaPrincipalUsuario().criarPainelUsuario()));
         rodape.add(btnVoltar);
         
@@ -78,6 +79,9 @@ public class TelaDesafios {
         }
         
         JList<Desafio> jList = new JList<>(model);
+        jList.setBackground(new Color(50, 50, 50));
+        jList.setForeground(Color.WHITE);
+        
         jList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -95,17 +99,28 @@ public class TelaDesafios {
                     criador);
                     
                 Component c = super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
-                if (encerrado) setForeground(Color.GRAY);
+                
+                if (isSelected) {
+                    setBackground(new Color(74, 255, 86));
+                    setForeground(Color.BLACK);
+                } else {
+                    setBackground(new Color(50, 50, 50));
+                    setForeground(encerrado ? Color.GRAY : Color.WHITE);
+                }
                 return c;
             }
         });
         
-        p.add(new JScrollPane(jList), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(jList);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(60,60,60)));
+        p.add(scroll, BorderLayout.CENTER);
         
         JPanel botoes = new JPanel();
+        botoes.setBackground(new Color(40,40,40));
         
         if(!apenasMeus) {
             JButton btnEntrar = new JButton("Participar");
+            estilizarBotao(btnEntrar, new Color(74, 255, 86), Color.BLACK);
             btnEntrar.addActionListener(e -> {
                 Desafio sel = jList.getSelectedValue();
                 if(sel != null) {
@@ -116,7 +131,6 @@ public class TelaDesafios {
                     try {
                         controladorDesafio.participarDesafio(sel.getIdDesafio(), usuarioLogado.getCpf());
                         JOptionPane.showMessageDialog(p, "Você entrou no desafio!");
-                        // RECARREGAR TELA
                         GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel());
                     } catch(Exception ex) { JOptionPane.showMessageDialog(p, ex.getMessage()); }
                 }
@@ -125,6 +139,7 @@ public class TelaDesafios {
         }
         
         JButton btnRanking = new JButton("Ver Ranking");
+        estilizarBotao(btnRanking, new Color(60,60,60), Color.WHITE);
         btnRanking.addActionListener(e -> {
             Desafio sel = jList.getSelectedValue();
             if(sel != null) JOptionPane.showMessageDialog(p, new JTextArea(Relatorio.gerarRankingDesafioTexto(sel)));
@@ -132,7 +147,7 @@ public class TelaDesafios {
         botoes.add(btnRanking);
 
         JButton btnEditar = new JButton("Editar (Dono)");
-        btnEditar.setBackground(new Color(255, 200, 0));
+        estilizarBotao(btnEditar, new Color(255, 200, 0), Color.BLACK);
         btnEditar.addActionListener(e -> {
             Desafio sel = jList.getSelectedValue();
             if (sel == null) {
@@ -150,8 +165,7 @@ public class TelaDesafios {
         botoes.add(btnEditar);
 
         JButton btnExcluir = new JButton("Excluir");
-        btnExcluir.setBackground(new Color(180, 50, 50));
-        btnExcluir.setForeground(Color.WHITE);
+        estilizarBotao(btnExcluir, new Color(180, 50, 50), Color.WHITE);
         btnExcluir.addActionListener(e -> {
             Desafio sel = jList.getSelectedValue();
             if (sel == null) return;
@@ -173,23 +187,26 @@ public class TelaDesafios {
         return p;
     }
     
+    // --- DIÁLOGOS CORRIGIDOS ---
     public static void abrirDialogoCriarDesafio() {
         JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Criar Desafio", true);
-        d.setLayout(new GridLayout(5,2));
-        d.setSize(400,250);
-        d.setLocationRelativeTo(null);
+        d.getContentPane().setBackground(new Color(30,30,30));
+        d.setLayout(new GridLayout(5,2, 10, 10));
+        ((JPanel)d.getContentPane()).setBorder(new EmptyBorder(20,20,20,20));
         
-        JTextField nome = new JTextField();
-        JTextField desc = new JTextField();
-        JTextField ini = new JTextField(LocalDate.now().toString());
-        JTextField fim = new JTextField(LocalDate.now().plusMonths(1).toString());
+        JTextField nome = criarInputEstilizado();
+        JTextField desc = criarInputEstilizado();
+        JTextField ini = criarInputEstilizado(); ini.setText(LocalDate.now().toString());
+        JTextField fim = criarInputEstilizado(); fim.setText(LocalDate.now().plusMonths(1).toString());
         
-        d.add(new JLabel(" Nome:")); d.add(nome);
-        d.add(new JLabel(" Descrição:")); d.add(desc);
-        d.add(new JLabel(" Início (aaaa-mm-dd):")); d.add(ini);
-        d.add(new JLabel(" Fim (aaaa-mm-dd):")); d.add(fim);
+        d.add(criarLabel("Nome:")); d.add(nome);
+        d.add(criarLabel("Descrição:")); d.add(desc);
+        d.add(criarLabel("Início (aaaa-mm-dd):")); d.add(ini);
+        d.add(criarLabel("Fim (aaaa-mm-dd):")); d.add(fim);
         
         JButton btn = new JButton("Criar");
+        estilizarBotao(btn, new Color(74, 255, 86), Color.BLACK);
+        
         btn.addActionListener(e -> {
             try {
                 Usuario criador = SessaoUsuario.getInstance().getUsuarioLogado();
@@ -200,34 +217,38 @@ public class TelaDesafios {
                 );
                 JOptionPane.showMessageDialog(d, "Desafio criado!");
                 d.dispose();
-                // RECARREGAR TELA
                 GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel());
             } catch(Exception ex) { JOptionPane.showMessageDialog(d, "Erro: " + ex.getMessage()); }
         });
+        d.add(new JLabel("")); // Spacer
         d.add(btn);
+        d.setSize(450,300);
+        d.setLocationRelativeTo(null);
         d.setVisible(true);
     }
 
     private void abrirDialogoEditarDesafio(Desafio desafio) {
         JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Editar Desafio", true);
-        d.setLayout(new GridLayout(5,2));
-        d.setSize(400,250);
-        d.setLocationRelativeTo(null);
+        d.getContentPane().setBackground(new Color(30,30,30));
+        d.setLayout(new GridLayout(5,2, 10, 10));
+        ((JPanel)d.getContentPane()).setBorder(new EmptyBorder(20,20,20,20));
         
-        JTextField nome = new JTextField(desafio.getNome());
-        JTextField desc = new JTextField(desafio.getDescricao());
-        JTextField ini = new JTextField(desafio.getDataInicio().toString());
-        JTextField fim = new JTextField(desafio.getDataFim().toString());
+        JTextField nome = criarInputEstilizado(); nome.setText(desafio.getNome());
+        JTextField desc = criarInputEstilizado(); desc.setText(desafio.getDescricao());
+        JTextField ini = criarInputEstilizado(); ini.setText(desafio.getDataInicio().toString());
+        JTextField fim = criarInputEstilizado(); fim.setText(desafio.getDataFim().toString());
         
-        d.add(new JLabel(" Nome:")); d.add(nome);
-        d.add(new JLabel(" Descrição:")); d.add(desc);
-        d.add(new JLabel(" Início (aaaa-mm-dd):")); d.add(ini);
-        d.add(new JLabel(" Fim (aaaa-mm-dd):")); d.add(fim);
+        d.add(criarLabel("Nome:")); d.add(nome);
+        d.add(criarLabel("Descrição:")); d.add(desc);
+        d.add(criarLabel("Início (aaaa-mm-dd):")); d.add(ini);
+        d.add(criarLabel("Fim (aaaa-mm-dd):")); d.add(fim);
         
         JButton btn = new JButton("Salvar Alterações");
+        estilizarBotao(btn, new Color(74, 255, 86), Color.BLACK);
+        
         btn.addActionListener(e -> {
             try {
-                controladorDesafio.atualizarDesafio(
+                TelaComputador.controladorDesafio.atualizarDesafio(
                     desafio.getIdDesafio(),
                     nome.getText(), desc.getText(), 
                     LocalDate.parse(ini.getText()), LocalDate.parse(fim.getText())
@@ -237,7 +258,34 @@ public class TelaDesafios {
                 GerenciadorTelas.getInstance().carregarTela(new TelaDesafios().criarPainel());
             } catch(Exception ex) { JOptionPane.showMessageDialog(d, "Erro: " + ex.getMessage()); }
         });
+        d.add(new JLabel(""));
         d.add(btn);
+        d.setSize(450,300);
+        d.setLocationRelativeTo(null);
         d.setVisible(true);
+    }
+    
+    // --- Métodos Auxiliares Locais ---
+    private static void estilizarBotao(JButton btn, Color bg, Color fg) {
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
+    }
+    
+    private static JTextField criarInputEstilizado() {
+        JTextField campo = new JTextField();
+        campo.setBackground(new Color(60, 60, 60));
+        campo.setForeground(Color.WHITE);
+        campo.setCaretColor(new Color(74, 255, 86));
+        campo.setBorder(BorderFactory.createLineBorder(new Color(80,80,80)));
+        return campo;
+    }
+    
+    private static JLabel criarLabel(String texto) {
+        JLabel lbl = new JLabel(texto);
+        lbl.setForeground(Color.WHITE);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        return lbl;
     }
 }
