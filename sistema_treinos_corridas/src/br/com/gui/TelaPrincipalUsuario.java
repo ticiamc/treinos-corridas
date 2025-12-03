@@ -58,7 +58,13 @@ public class TelaPrincipalUsuario {
         });
         menu.add(Box.createVerticalStrut(10));
 
-        // 7. Meu Perfil (Por último)
+        // 7.Relatorios
+        adicionarBotao(menu, "Relatórios", e -> {
+            if(logado != null) GerenciadorTelas.getInstance().carregarTela(new TelaRelatorios(logado).criarPainel());
+        });
+        menu.add(Box.createVerticalStrut(10));
+
+        // 8. Meu Perfil (Por último)
         adicionarBotao(menu, "Meu Perfil", e -> new TelaPerfilUsuario());
         
         // ----------------------------------------------
