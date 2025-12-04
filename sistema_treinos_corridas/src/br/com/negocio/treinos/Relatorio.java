@@ -111,7 +111,7 @@ public class Relatorio {
         sb.append("Usuário: ").append(usuario.getNome()).append("\n\n");
 
 
-        if (desafios == null) {
+        if (desafios == null || desafios.isEmpty()) {
             sb.append("Não há desafios cadastrados no sistema.\n");
             return sb.toString();
         }

@@ -144,7 +144,11 @@ public class TelaRelatorios {
             if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
 
-                    Relatorio.exportarPDFNativo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                    LocalDate d3 = LocalDate.parse(tInicio.getText(), fmt);
+                    LocalDate d4 = LocalDate.parse(tFim.getText(), fmt);
+
+                    Relatorio.exportarPDFFiltrado(usuario, d3, d4, fc.getSelectedFile().getAbsolutePath());
                     JOptionPane.showMessageDialog(painel, "PDF gerado com sucesso!");
                 } catch (IOException ex) { JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage()); }
             }
