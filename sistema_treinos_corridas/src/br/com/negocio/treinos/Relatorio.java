@@ -108,8 +108,6 @@ public class Relatorio {
         sb.append("RELATÓRIO DE DESAFIOS\n");
         sb.append("Usuário: ").append(usuario.getNome()).append("\n\n");
 
-        boolean encontrou = false;
-
         for (Treino t : usuario.getTreinos()) {
         }
 

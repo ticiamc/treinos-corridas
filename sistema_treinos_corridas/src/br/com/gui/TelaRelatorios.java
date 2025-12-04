@@ -6,9 +6,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
-import java.time.format.DateTimeFormatter;
-
 public class TelaRelatorios {
 
     private Usuario usuario;
@@ -263,9 +260,4 @@ public class TelaRelatorios {
         l.setForeground(Color.WHITE);
         return l;
     }
-
-    private interface TextoProvider {
-        String getTexto();
-    }
 }
-
