@@ -104,24 +104,85 @@ public class Relatorio {
 
     
     
-    // REQ18 — RELATÓRIO DE DESAFIOS
-    
-    public static String gerarRelatorioDesafios(Usuario usuario) {
+    // --- 4. RELATÓRIO DE DESAFIOS ---
+    public static String gerarRelatorioDesafios(List<Desafio> desafios, Usuario usuario) {
         StringBuilder sb = new StringBuilder();
-        sb.append("RELATÓRIO DE DESAFIOS\n");
+
+        sb.append("===== RELATÓRIO DE DESAFIOS =====\n");
         sb.append("Usuário: ").append(usuario.getNome()).append("\n\n");
 
-        boolean encontrou = false;
+        if (desafios == null || desafios.isEmpty()) {
+            sb.append("Não há desafios cadastrados no sistema.\n");
+            return sb.toString();
+        }
 
-        for (Treino t : usuario.getTreinos()) {}
-    
-        sb.append("Falta terminar");
-        
+        for (Desafio d : desafios) {
+            sb.append("----------------------------------------------------\n");
+            sb.append("Desafio: ").append(d.getNome()).append("\n");
+            sb.append("Período: ").append(df.format(d.getDataInicio()))
+            .append(" até ").append(df.format(d.getDataFim())).append("\n");
+            sb.append("Descrição: ").append(d.getDescricao()).append("\n\n");
+
+            // --- Identificar se o usuário participa ---
+            ParticipacaoDesafio minhaPart = null;
+            for (ParticipacaoDesafio p : d.getParticipacoes()) {
+                if (p.getUsuario().getCpf().equals(usuario.getCpf())) {
+                    minhaPart = p;
+                    break;
+                }
+            }
+
+            if (minhaPart == null) {
+                sb.append("Status: Você NÃO está participando deste desafio.\n\n");
+            } else {
+                double objetivo = 1.0; // Caso queira evoluir com metas de distância
+                double progresso = calcularProgressoDesafio(usuario, d);
+                double km = progresso / 1000.0;
+
+                sb.append("Status: Participando\n");
+                sb.append(String.format("Seu progresso: %.2f km\n", km));
+
+                // Concluído?
+                boolean concluido = LocalDate.now().isAfter(d.getDataFim());
+                sb.append("Situação: ").append(concluido ? "Concluído\n\n" : "Em andamento\n\n");
+            }
+
+            // --- Ranking do desafio ---
+            sb.append(">> Ranking do Desafio:\n");
+
+            if (d.getParticipacoes().isEmpty()) {
+                sb.append("Nenhum participante até o momento.\n\n");
+                continue;
+            }
+
+            // Atualizar progresso de todos (igual ao gerarRankingDesafioTexto)
+            for (ParticipacaoDesafio p : d.getParticipacoes()) {
+                p.setProgresso(calcularProgressoDesafio(p.getUsuario(), d));
+            }
+
+            // Ordenação decrescente por distância percorrida
+            Collections.sort(d.getParticipacoes(),
+                    (p1, p2) -> Double.compare(p2.getProgresso(), p1.getProgresso()));
+
+            int pos = 1;
+            for (ParticipacaoDesafio p : d.getParticipacoes()) {
+                sb.append(String.format("%dº - %s: %.2f km\n",
+                        pos,
+                        p.getUsuario().getNome(),
+                        p.getProgresso() / 1000.0));
+                pos++;
+            }
+
+            sb.append("\n");
+        }
+
+        sb.append("===== FIM DO RELATÓRIO =====\n");
         return sb.toString();
-    } 
+    }
 
 
-    // --- 4. EXPORTAÇÃO EXCEL XML (.XLS) - SUBSTITUI O CSV "FEIO" ---
+
+    // --- 5. EXPORTAÇÃO EXCEL XML (.XLS) - SUBSTITUI O CSV "FEIO" ---
     // Este formato permite cores, larguras de coluna e formatação que o CSV não permite.
     public static void exportarRelatorioExcelLindo(Usuario cliente, String caminhoArquivo) throws IOException {
         if (!caminhoArquivo.toLowerCase().endsWith(".xls")) caminhoArquivo += ".xls";
@@ -189,7 +250,7 @@ public class Relatorio {
     }
 
 
-    // --- 5. EXPORTAÇÃO PDF NATIVO (SIMPLIFICADO) ---
+    // --- 6. EXPORTAÇÃO PDF NATIVO (SIMPLIFICADO) ---
     // Escreve a estrutura binária básica do PDF sem bibliotecas externas.
     public static void exportarPDFNativo(Usuario cliente, String caminhoArquivo) throws IOException {
         if (!caminhoArquivo.toLowerCase().endsWith(".pdf")) caminhoArquivo += ".pdf";

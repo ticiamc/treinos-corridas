@@ -1,6 +1,9 @@
 package br.com.gui;
 
 import br.com.negocio.treinos.*;
+import br.com.negocio.ControladorDesafio;
+import br.com.negocio.Fachada;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -220,8 +223,38 @@ public class TelaRelatorios {
         area.setForeground(Color.WHITE);
         area.setFont(new Font("Consolas", Font.PLAIN, 12));
 
-        String texto = Relatorio.gerarRelatorioDesafios(usuario);
+        java.util.List<Desafio> desafios = Fachada.getInstance().getControladorDesafio().listarDesafios();
+
+        String texto = Relatorio.gerarRelatorioDesafios(desafios, usuario);
         area.setText(texto);
+
+        JButton exportarExel = criarBotao("Exportar Excel");
+        exportarExel.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            fc.setSelectedFile(new java.io.File("relatorio_desafios.xls"));
+            if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    Relatorio.exportarRelatorioExcelLindo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    JOptionPane.showMessageDialog(painel, "Excel gerado com sucesso!");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage());
+                }
+            }
+        });
+
+        JButton exportarPdf = criarBotao("Exportar PDF");
+        exportarPdf.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            fc.setSelectedFile(new java.io.File("relatorio_desafios.pdf"));
+            if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    Relatorio.exportarPDFNativo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    JOptionPane.showMessageDialog(painel, "PDF gerado com sucesso!");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage());
+                }
+            }
+        });
 
         JButton voltar = criarBotao("Voltar");
         voltar.addActionListener(e -> GerenciadorTelas.getInstance().carregarTela(criarPainel()));
@@ -229,7 +262,8 @@ public class TelaRelatorios {
         JPanel botoes = new JPanel();
         botoes.setBackground(new Color(30, 30, 30));
         botoes.add(voltar);
-        
+        botoes.add(exportarExel);
+        botoes.add(exportarPdf);
 
         painel.add(new JScrollPane(area), BorderLayout.CENTER);
         painel.add(botoes, BorderLayout.SOUTH);
