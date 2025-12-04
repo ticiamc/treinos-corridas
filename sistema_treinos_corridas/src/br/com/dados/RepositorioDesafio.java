@@ -5,6 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RepositorioDesafio implements IRepositorioDesafio {
+
+    private static RepositorioDesafio instancia;
+
+    public static synchronized RepositorioDesafio getInstance() {
+        if(instancia == null)
+            instancia = new RepositorioDesafio();
+        return instancia;
+    }
+    
     private List<Desafio> desafios;
     
     public RepositorioDesafio() { this.desafios = new ArrayList<>(); }

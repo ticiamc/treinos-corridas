@@ -483,6 +483,150 @@ public class Relatorio {
         }
     }
 
+    // --- 9. GERAR EXEL DESAFIOS ---
+
+    public static void exportarRelatorioDesafiosExcel(List<Desafio> desafios, Usuario usuario, String caminhoArquivo) throws IOException {
+       
+        if (!caminhoArquivo.toLowerCase().endsWith(".xls"))
+            caminhoArquivo += ".xls";
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(caminhoArquivo, StandardCharsets.UTF_8))) {
+
+            writer.println("<?xml version=\"1.0\"?>");
+            writer.println("<?mso-application progid=\"Excel.Sheet\"?>");
+            writer.println("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\">");
+
+            writer.println("<Worksheet ss:Name=\"Desafios\">");
+            writer.println("<Table>");
+
+            writer.println("<Row>");
+            writer.println("<Cell><Data ss:Type=\"String\">Desafio</Data></Cell>");
+            writer.println("<Cell><Data ss:Type=\"String\">Status</Data></Cell>");
+            writer.println("<Cell><Data ss:Type=\"String\">Progresso (km)</Data></Cell>");
+            writer.println("</Row>");
+
+            for (Desafio d : desafios) {
+                double progresso = calcularProgressoDesafio(usuario, d) / 1000.0;
+                boolean participa = d.getParticipacoes().stream()
+                                    .anyMatch(p -> p.getUsuario().getCpf().equals(usuario.getCpf()));
+
+                writer.println("<Row>");
+                writer.println("<Cell><Data ss:Type=\"String\">" + d.getNome() + "</Data></Cell>");
+                writer.println("<Cell><Data ss:Type=\"String\">" + (participa ? "Participando" : "Não participa") + "</Data></Cell>");
+                writer.println("<Cell><Data ss:Type=\"Number\">" + String.format(Locale.US, "%.2f", progresso) + "</Data></Cell>");
+                writer.println("</Row>");
+            }
+
+            writer.println("</Table>");
+            writer.println("</Worksheet>");
+            writer.println("</Workbook>");
+        }
+    }
+
+
+    // --- 10. GERAR PDF DESAFIOS ---
+    public static void exportarRelatorioDesafiosPDF(List<Desafio> desafios, Usuario usuario, String caminhoArquivo) throws IOException {
+
+    if (!caminhoArquivo.toLowerCase().endsWith(".pdf"))
+        caminhoArquivo += ".pdf";
+
+    try (FileOutputStream fos = new FileOutputStream(caminhoArquivo)) {
+
+        StringBuilder content = new StringBuilder();
+
+        // Título do PDF
+        content.append("BT /F1 18 Tf 50 800 Td (RELATORIO DE DESAFIOS) Tj ET\n");
+        content.append("BT /F1 12 Tf 50 770 Td (Usuario: " + usuario.getNome().replace("(", "\\(").replace(")", "\\)") + ") Tj ET\n");
+
+        int y = 740;
+
+        for (Desafio d : desafios) {
+
+            if (y < 80) break; // limite da página
+
+            double progresso = calcularProgressoDesafio(usuario, d) / 1000.0;
+
+            String nomeDesafio = d.getNome().replace("(", "\\(").replace(")", "\\)");
+            String periodo = (d.getDataInicio().toString() + " a " + d.getDataFim().toString())
+                                .replace("(", "\\(").replace(")", "\\)");
+
+            // Nome do desafio
+            content.append("BT /F1 12 Tf 50 " + y + " Td (" + nomeDesafio + ") Tj ET\n");
+            y -= 20;
+
+            // Período
+            content.append("BT /F1 10 Tf 50 " + y + " Td (Periodo: " + periodo + ") Tj ET\n");
+            y -= 15;
+
+            // Progresso
+            content.append("BT /F1 10 Tf 50 " + y + " Td (Progresso: " + String.format("%.2f km", progresso) + ") Tj ET\n");
+            y -= 20;
+
+            // Linha separadora
+            content.append("1 w 50 " + (y + 5) + " m 550 " + (y + 5) + " l S\n");
+        }
+
+        // ========= ESTRUTURA COMPLETA DO PDF ==========
+        String streamData = content.toString();
+        int streamLength = streamData.length();
+
+        // Objetos PDF
+        String pdfHeader = "%PDF-1.4\n";
+        String obj1_Catalog =
+                "1 0 obj\n" +
+                "<< /Type /Catalog /Pages 2 0 R >>\n" +
+                "endobj\n";
+
+        String obj2_Pages =
+                "2 0 obj\n" +
+                "<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n" +
+                "endobj\n";
+
+        String obj3_Page =
+                "3 0 obj\n" +
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]\n" +
+                "   /Resources << /Font << /F1 4 0 R >> >>\n" +
+                "   /Contents 5 0 R >>\n" +
+                "endobj\n";
+
+        String obj4_Font =
+                "4 0 obj\n" +
+                "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n" +
+                "endobj\n";
+
+        String obj5_Stream =
+                "5 0 obj\n" +
+                "<< /Length " + streamLength + " >>\n" +
+                "stream\n" +
+                streamData + "\n" +
+                "endstream\n" +
+                "endobj\n";
+
+        // Escreve tudo no arquivo
+        fos.write(pdfHeader.getBytes());
+        fos.write(obj1_Catalog.getBytes());
+        fos.write(obj2_Pages.getBytes());
+        fos.write(obj3_Page.getBytes());
+        fos.write(obj4_Font.getBytes());
+        fos.write(obj5_Stream.getBytes());
+
+        // XREF simplificado (como no seu método original)
+        fos.write(
+            ("xref\n" +
+             "0 6\n" +
+             "0000000000 65535 f \n" +
+             "0000000010 00000 n \n" +
+             "0000000060 00000 n \n" +
+             "0000000117 00000 n \n" +
+             "0000000260 00000 n \n" +
+             "0000000348 00000 n \n").getBytes()
+        );
+
+        fos.write(("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n450\n%%EOF").getBytes());
+    }
+}
+
+
     // Métodos de Desafio mantidos
     public static String gerarRankingDesafioTexto(Desafio desafio) {
         StringBuilder sb = new StringBuilder();

@@ -245,7 +245,7 @@ public class TelaRelatorios {
             fc.setSelectedFile(new java.io.File("relatorio_desafios.xls"));
             if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
-                    Relatorio.exportarRelatorioExcelLindo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    Relatorio.exportarRelatorioDesafiosExcel(desafios, usuario, fc.getSelectedFile().getAbsolutePath());
                     JOptionPane.showMessageDialog(painel, "Excel gerado com sucesso!");
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage());
@@ -259,7 +259,7 @@ public class TelaRelatorios {
             fc.setSelectedFile(new java.io.File("relatorio_desafios.pdf"));
             if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
-                    Relatorio.exportarPDFNativo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    Relatorio.exportarRelatorioDesafiosPDF(desafios, usuario, fc.getSelectedFile().getAbsolutePath());
                     JOptionPane.showMessageDialog(painel, "PDF gerado com sucesso!");
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage());

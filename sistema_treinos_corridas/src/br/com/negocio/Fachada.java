@@ -17,7 +17,7 @@ public class Fachada {
     // Inicialização dos Repositórios e Controladores
     private Fachada() {
         IRepositorioCliente repoCliente = new RepositorioClientes();
-        IRepositorioDesafio repoDesafio = new RepositorioDesafio();
+        IRepositorioDesafio repoDesafio = RepositorioDesafio.getInstance();
         IRepositorioPlanoTreino repoPlano = new RepositorioPlanoTreino();
 
         this.controladorCliente = new ControladorCliente(repoCliente);
@@ -26,6 +26,7 @@ public class Fachada {
         this.controladorMeta = new ControladorMeta(repoCliente);
         this.controladorPlanoTreino = new ControladorPlanoTreino(repoCliente, repoPlano);
         
+
         // Inicializa dados de teste (opcional)
         inicializarDadosTeste();
     }
