@@ -1,7 +1,6 @@
 package br.com.gui;
 
 import br.com.negocio.treinos.*;
-import br.com.negocio.ControladorDesafio;
 import br.com.negocio.Fachada;
 
 import javax.swing.*;
