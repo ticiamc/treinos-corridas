@@ -2,7 +2,6 @@ package br.com.dados;
 
 import br.com.negocio.treinos.Desafio;
 import java.util.ArrayList;
-import java.util.List;
 
 public class RepositorioDesafio implements IRepositorioDesafio {
 

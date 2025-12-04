@@ -8,7 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
+
 
 public class TelaRelatorios {
 
