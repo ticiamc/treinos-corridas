@@ -120,13 +120,17 @@ public class TelaRelatorios {
             }
         });
 
+        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate d3 = LocalDate.parse(tInicio.getText(), fmt);
+        LocalDate d4 = LocalDate.parse(tFim.getText(), fmt);
+
         JButton exportarExel = criarBotao("Exportar Excel");
         exportarExel.addActionListener(e -> { 
             JFileChooser fc = new JFileChooser();
             fc.setSelectedFile(new java.io.File("relatorio.xls"));
             if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
-                    Relatorio.exportarRelatorioExcelLindo(usuario, fc.getSelectedFile().getAbsolutePath());
+                    Relatorio.exportarRelatorioExcelFiltrada(usuario, d3, d4, fc.getSelectedFile().getAbsolutePath());
                     JOptionPane.showMessageDialog(painel, "Excel gerado com sucesso!");
                 } catch (IOException ex) { JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage()); }
             }

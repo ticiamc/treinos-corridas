@@ -335,6 +335,81 @@ public class Relatorio {
         }
     }
 
+    // --- 7. EXPORTAÇÃO EXCEL XML (.XLS) FILTRADA ---
+    public static void exportarRelatorioExcelFiltrada(Usuario cliente, LocalDate inicio, LocalDate fim, String caminhoArquivo) throws IOException {
+        if (!caminhoArquivo.toLowerCase().endsWith(".xls"))
+            caminhoArquivo += ".xls";
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(caminhoArquivo, StandardCharsets.UTF_8))) {
+            writer.println("<?xml version=\"1.0\"?>");
+            writer.println("<?mso-application progid=\"Excel.Sheet\"?>");
+            writer.println("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\"");
+            writer.println(" xmlns:o=\"urn:schemas-microsoft-com:office:office\"");
+            writer.println(" xmlns:x=\"urn:schemas-microsoft-com:office:excel\"");
+            writer.println(" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"");
+            writer.println(" xmlns:html=\"http://www.w3.org/TR/REC-html40\">");
+
+            // Estilos (Cores e Fontes)
+            writer.println(" <Styles>");
+            writer.println(
+                    "  <Style ss:ID=\"Default\" ss:Name=\"Normal\"><Alignment ss:Vertical=\"Bottom\"/><Borders/><Font ss:FontName=\"Calibri\" ss:Size=\"11\"/></Style>");
+            writer.println(
+                    "  <Style ss:ID=\"sHeader\"><Font ss:FontName=\"Calibri\" ss:Size=\"12\" ss:Bold=\"1\" ss:Color=\"#000000\"/><Interior ss:Color=\"#4AFF56\" ss:Pattern=\"Solid\"/><Borders><Border ss:Position=\"Bottom\" ss:LineStyle=\"Continuous\" ss:Weight=\"1\"/></Borders><Alignment ss:Horizontal=\"Center\"/></Style>");
+            writer.println(
+                    "  <Style ss:ID=\"sDate\"><NumberFormat ss:Format=\"Short Date\"/><Alignment ss:Horizontal=\"Center\"/></Style>");
+            writer.println("  <Style ss:ID=\"sCenter\"><Alignment ss:Horizontal=\"Center\"/></Style>");
+            writer.println(" </Styles>");
+
+            writer.println(" <Worksheet ss:Name=\"Relatorio Iron Track\">");
+            writer.println("  <Table>");
+            // Larguras das Colunas (Resolve o problema do ####)
+            writer.println("   <Column ss:Width=\"100\"/>"); // Data
+            writer.println("   <Column ss:Width=\"60\"/>"); // Hora
+            writer.println("   <Column ss:Width=\"150\"/>"); // Nome
+            writer.println("   <Column ss:Width=\"80\"/>"); // Tipo
+            writer.println("   <Column ss:Width=\"80\"/>"); // Duração
+            writer.println("   <Column ss:Width=\"80\"/>"); // Distância
+            writer.println("   <Column ss:Width=\"80\"/>"); // Kcal
+
+            // Cabeçalho
+            writer.println("   <Row>");
+            String[] headers = { "Data", "Hora", "Nome do Treino", "Tipo", "Duração (min)", "Distância (km)", "Kcal" };
+            for (String h : headers)
+                writer.println("    <Cell ss:StyleID=\"sHeader\"><Data ss:Type=\"String\">" + h + "</Data></Cell>");
+            writer.println("   </Row>");
+
+            DateTimeFormatter fmtData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter fmtHora = DateTimeFormatter.ofPattern("HH:mm");
+            Locale br = Locale.forLanguageTag("pt-BR");
+
+            for (Treino t : cliente.getTreinos()) {
+
+                LocalDate d = t.getDataExecucao().toLocalDate();
+                if (d.isBefore(inicio) || d.isAfter(fim)) continue;
+                String tipo = (t instanceof Corrida) ? "Corrida" : "Intervalado";
+                double dist = (t instanceof Corrida) ? ((Corrida) t).getDistanciaEmMetros() / 1000.0 : 0;
+
+                writer.println("   <Row>");
+                writer.println("    <Cell ss:StyleID=\"sDate\"><Data ss:Type=\"String\">"
+                        + t.getDataExecucao().format(fmtData) + "</Data></Cell>");
+                writer.println("    <Cell ss:StyleID=\"sCenter\"><Data ss:Type=\"String\">"
+                        + t.getDataExecucao().format(fmtHora) + "</Data></Cell>");
+                writer.println("    <Cell><Data ss:Type=\"String\">" + t.getNomeTreino() + "</Data></Cell>");
+                writer.println("    <Cell ss:StyleID=\"sCenter\"><Data ss:Type=\"String\">" + tipo + "</Data></Cell>");
+                writer.println("    <Cell ss:StyleID=\"sCenter\"><Data ss:Type=\"Number\">"
+                        + (t.getDuracaoSegundos() / 60) + "</Data></Cell>");
+                writer.println("    <Cell ss:StyleID=\"sCenter\"><Data ss:Type=\"Number\">"
+                        + String.format(Locale.US, "%.2f", dist) + "</Data></Cell>");
+                writer.println("    <Cell ss:StyleID=\"sCenter\"><Data ss:Type=\"Number\">"
+                        + String.format(Locale.US, "%.0f", t.calcularCaloriasQueimadas(cliente)) + "</Data></Cell>");
+                writer.println("   </Row>");
+            }
+            writer.println("  </Table>");
+            writer.println(" </Worksheet>");
+            writer.println("</Workbook>");
+        }
+    }
+
     // Métodos de Desafio mantidos
     public static String gerarRankingDesafioTexto(Desafio desafio) {
         StringBuilder sb = new StringBuilder();
