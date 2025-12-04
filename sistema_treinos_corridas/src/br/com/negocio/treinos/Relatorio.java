@@ -111,7 +111,7 @@ public class Relatorio {
         sb.append("Usuário: ").append(usuario.getNome()).append("\n\n");
 
 
-        if (desafios == null || desafios.isEmpty()) {
+        if (desafios == null) {
             sb.append("Não há desafios cadastrados no sistema.\n");
             return sb.toString();
         }
@@ -335,7 +335,7 @@ public class Relatorio {
         }
     }
 
-    // --- 7. EXPORTAÇÃO EXCEL XML (.XLS) FILTRADA ---
+    // --- 7. EXPORTAÇÃO EXCEL XML (.XLS) PERÍODO FILTRADO ---
     public static void exportarRelatorioExcelFiltrada(Usuario cliente, LocalDate inicio, LocalDate fim, String caminhoArquivo) throws IOException {
         if (!caminhoArquivo.toLowerCase().endsWith(".xls"))
             caminhoArquivo += ".xls";
@@ -407,6 +407,79 @@ public class Relatorio {
             writer.println("  </Table>");
             writer.println(" </Worksheet>");
             writer.println("</Workbook>");
+        }
+    }
+
+    // --- 8. EXPORTAÇÃO PDF PERÍODO FILTRADO ---
+    public static void exportarPDFFiltrado(Usuario cliente, LocalDate inicio, LocalDate fim, String caminhoArquivo) throws IOException {
+        if (!caminhoArquivo.toLowerCase().endsWith(".pdf"))
+            caminhoArquivo += ".pdf";
+
+        try (FileOutputStream fos = new FileOutputStream(caminhoArquivo)) {
+            StringBuilder content = new StringBuilder();
+
+
+            // Título e Cabeçalho
+            content.append("BT /F1 18 Tf 50 800 Td (IRON TRACK - RELATORIO DE PERFORMANCE) Tj ET\n");
+            content.append("BT /F1 12 Tf 50 770 Td (Atleta: " + cliente.getNome() + ") Tj ET\n");
+            content.append("BT /F1 10 Tf 50 755 Td (CPF: " + cliente.getCpf() + ") Tj ET\n");
+
+            // Cabeçalho da Tabela
+            int y = 720;
+            content.append("BT /F1 10 Tf 50 " + y
+                    + " Td (DATA       | TIPO        | NOME                | TEMPO   | KCAL) Tj ET\n");
+            content.append("1.0 w 50 " + (y - 5) + " m 500 " + (y - 5) + " l S\n"); // Linha
+            y -= 20;
+
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            for (Treino t : cliente.getTreinos()) {
+
+                LocalDate d = t.getDataExecucao().toLocalDate();
+                if (d.isBefore(inicio) || d.isAfter(fim)) continue;
+                if (y < 50)
+                    break; // Limite de página simples (simplificação)
+
+                String tipo = (t instanceof Corrida) ? "Corrida" : "Interval";
+                String nome = t.getNomeTreino().length() > 15 ? t.getNomeTreino().substring(0, 15) : t.getNomeTreino();
+                String linha = String.format("%s | %-10s | %-18s | %3d min | %.0f",
+                        t.getDataExecucao().format(fmt),
+                        tipo,
+                        nome,
+                        t.getDuracaoSegundos() / 60,
+                        t.calcularCaloriasQueimadas(cliente));
+
+                // Sanitizar parênteses para PDF
+                linha = linha.replace("(", "\\(").replace(")", "\\)");
+
+                content.append("BT /F1 10 Tf 50 " + y + " Td (" + linha + ") Tj ET\n");
+                y -= 15;
+            }
+
+            // --- Estrutura Mínima do PDF (Cross-Reference e Trailer) ---
+            String streamData = content.toString();
+            int streamLength = streamData.length();
+
+            String pdfHeader = "%PDF-1.4\n";
+            String obj1_Catalog = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+            String obj2_Pages = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+            String obj3_Page = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n";
+            String obj4_Font = "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
+            String obj5_Stream = "5 0 obj\n<< /Length " + streamLength + " >>\nstream\n" + streamData
+                    + "\nendstream\nendobj\n";
+
+            fos.write(pdfHeader.getBytes());
+            fos.write(obj1_Catalog.getBytes());
+            fos.write(obj2_Pages.getBytes());
+            fos.write(obj3_Page.getBytes());
+            fos.write(obj4_Font.getBytes());
+            fos.write(obj5_Stream.getBytes());
+
+            // Xref simples (offset fictício simplificado para compatibilidade básica)
+            fos.write(
+                    "xref\n0 6\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000117 00000 n \n0000000260 00000 n \n0000000348 00000 n \n"
+                            .getBytes());
+            fos.write(("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n450\n%%EOF").getBytes());
         }
     }
 
