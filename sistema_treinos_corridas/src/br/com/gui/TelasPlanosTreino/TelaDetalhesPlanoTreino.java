@@ -106,8 +106,9 @@ public class TelaDetalhesPlanoTreino {
 
     private void abrirDialogoNovoTreino(JPanel parent, DefaultListModel<String> model) {
         JDialog d = new JDialog(GerenciadorTelas.getInstance().getJanelaPrincipal(), "Novo Treino no Plano", true);
-        d.setLayout(new GridLayout(6,2, 5, 5));
-        d.setSize(400, 350);
+        // Alterado de 6 para 7 linhas para caber o campo de Descanso
+        d.setLayout(new GridLayout(7, 2, 5, 5));
+        d.setSize(400, 400); // Aumentei um pouco a altura da janela
         d.setLocationRelativeTo(parent);
 
         JTextField txtNome = new JTextField("Treino do Plano");
@@ -121,12 +122,24 @@ public class TelaDetalhesPlanoTreino {
         JTextField txtDuracao = new JTextField("60");
         String[] tipos = {"Corrida", "Intervalado"};
         JComboBox<String> cbTipo = new JComboBox<>(tipos);
+        
         JTextField txtExtra = new JTextField(); 
         JLabel lblExtra = new JLabel("Distância (m):");
 
+        // --- NOVO: Campo de Descanso ---
+        JLabel lblDescanso = new JLabel("Descanso (seg):");
+        JTextField txtDescanso = new JTextField("0");
+        txtDescanso.setEnabled(false); // Começa desabilitado (padrão é Corrida)
+
         cbTipo.addActionListener(e -> {
-            if(cbTipo.getSelectedItem().equals("Corrida")) lblExtra.setText("Distância (m):");
-            else lblExtra.setText("Séries:");
+            if(cbTipo.getSelectedItem().equals("Corrida")) {
+                lblExtra.setText("Distância (m):");
+                txtDescanso.setEnabled(false); // Desabilita descanso para corrida
+                txtDescanso.setText("0");
+            } else {
+                lblExtra.setText("Séries:");
+                txtDescanso.setEnabled(true); // Habilita descanso para intervalado
+            }
         });
 
         d.add(new JLabel("Nome:")); d.add(txtNome);
@@ -134,6 +147,8 @@ public class TelaDetalhesPlanoTreino {
         d.add(new JLabel("Duração (min):")); d.add(txtDuracao);
         d.add(new JLabel("Tipo:")); d.add(cbTipo);
         d.add(lblExtra); d.add(txtExtra);
+        // Adicionando o novo campo na tela
+        d.add(lblDescanso); d.add(txtDescanso); 
 
         JButton btnSalvar = new JButton("Salvar e Adicionar");
         btnSalvar.addActionListener(e -> {
@@ -153,11 +168,15 @@ public class TelaDetalhesPlanoTreino {
                 String tipo = (String) cbTipo.getSelectedItem();
                 
                 if(tipo.equals("Corrida")) {
-                    double dist = Double.parseDouble(txtExtra.getText());
+                    double dist = Double.parseDouble(txtExtra.getText().replace(",", "."));
                     TelaComputador.controladorTreino.cadastrarTreino(u.getCpf(), "Corrida", data, duracao, nome, dist, 0, 0);
                 } else {
                     int series = Integer.parseInt(txtExtra.getText());
-                    TelaComputador.controladorTreino.cadastrarTreino(u.getCpf(), "Intervalado", data, duracao, nome, 0, series, 0);
+                    // Captura o valor do campo de descanso
+                    int descanso = Integer.parseInt(txtDescanso.getText());
+                    
+                    // Passa o valor 'descanso' para o controlador
+                    TelaComputador.controladorTreino.cadastrarTreino(u.getCpf(), "Intervalado", data, duracao, nome, 0, series, descanso);
                 }
 
                 Treino novoTreino = u.getTreinos().get(u.getTreinos().size() - 1);

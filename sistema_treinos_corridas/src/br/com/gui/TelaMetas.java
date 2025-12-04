@@ -85,6 +85,7 @@ public class TelaMetas {
         JTextField txtDesc = new JTextField();
         JComboBox<TipoMeta> cbTipo = new JComboBox<>(TipoMeta.values());
         JTextField txtValor = new JTextField();
+
         JTextField txtData = new JTextField(LocalDate.now().plusMonths(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
         dialog.add(new JLabel(" Descrição:")); dialog.add(txtDesc);
@@ -98,8 +99,15 @@ public class TelaMetas {
                 String desc = txtDesc.getText();
                 double val = Double.parseDouble(txtValor.getText().replace(",", "."));
                 LocalDate data = LocalDate.parse(txtData.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                
+                if (data.isBefore(LocalDate.now())) {
+                    throw new Exception("A data limite não pode ser anterior à data de hoje (" + 
+                        LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ").");
+                }
+
                 TipoMeta tipo = (TipoMeta) cbTipo.getSelectedItem();
                 if(tipo == TipoMeta.DISTANCIA) val = val * 1000;
+                
                 controladorMeta.cadastrarMeta(usuarioLogado.getCpf(), desc, tipo, val, data);
                 atualizarLista();
                 dialog.dispose();

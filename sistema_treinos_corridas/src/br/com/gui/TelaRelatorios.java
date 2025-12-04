@@ -9,7 +9,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
 
 public class TelaRelatorios {
 
@@ -85,6 +84,7 @@ public class TelaRelatorios {
     // =======================================================
     //  TELA 1 — RELATÓRIO POR PERÍODO (REQ16)
     // =======================================================
+
     private JPanel criarPainelPeriodo() {
         JPanel painel = criarBase("Relatório por Período");
 
@@ -92,8 +92,8 @@ public class TelaRelatorios {
         centro.setBackground(new Color(30, 30, 30));
         centro.setLayout(new GridLayout(3, 2, 10, 10));
 
-        JLabel lInicio = criarTexto("Data de Início (AAAA-MM-DD):");
-        JLabel lFim = criarTexto("Data de Fim (AAAA-MM-DD):");
+        JLabel lInicio = criarTexto("Data de Início (dd/MM/yyyy):");
+        JLabel lFim = criarTexto("Data de Fim (dd/MM/yyyy):");
 
         JTextField tInicio = new JTextField();
         JTextField tFim = new JTextField();
@@ -110,19 +110,20 @@ public class TelaRelatorios {
 
         gerar.addActionListener(e -> {
             try {
-                LocalDate d1 = LocalDate.parse(tInicio.getText());
-                LocalDate d2 = LocalDate.parse(tFim.getText());
+                java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate d1 = LocalDate.parse(tInicio.getText(), fmt);
+                LocalDate d2 = LocalDate.parse(tFim.getText(), fmt);
 
                 String texto = Relatorio.gerarRelatorioPorPeriodo(usuario, d1, d2);
                 resposta.setText(texto);
             } catch (Exception ex) {
-                resposta.setText("Erro na data. Use o formato correto: AAAA-MM-DD.");
+                resposta.setText("Erro na data. Use o formato correto: dd/MM/yyyy.");
             }
         });
 
-        // EXPORTAÇÃO
-        JButton exportarExel = criarBotao("Exportar Exel");
-        exportarExel.addActionListener(e -> { JFileChooser fc = new JFileChooser();
+        JButton exportarExel = criarBotao("Exportar Excel");
+        exportarExel.addActionListener(e -> { 
+            JFileChooser fc = new JFileChooser();
             fc.setSelectedFile(new java.io.File("relatorio.xls"));
             if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -133,7 +134,8 @@ public class TelaRelatorios {
         });
 
         JButton exportarPdf = criarBotao("Exportar PDF");
-        exportarPdf.addActionListener(e -> { JFileChooser fc = new JFileChooser();
+        exportarPdf.addActionListener(e -> { 
+            JFileChooser fc = new JFileChooser();
             fc.setSelectedFile(new java.io.File("relatorio.pdf"));
             if (fc.showSaveDialog(painel) == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -293,9 +295,4 @@ public class TelaRelatorios {
         l.setForeground(Color.WHITE);
         return l;
     }
-
-    private interface TextoProvider {
-        String getTexto();
-    }
 }
-
