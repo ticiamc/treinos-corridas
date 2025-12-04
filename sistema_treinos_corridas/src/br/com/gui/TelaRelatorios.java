@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class TelaRelatorios {
 
@@ -234,7 +235,7 @@ public class TelaRelatorios {
         area.setForeground(Color.WHITE);
         area.setFont(new Font("Consolas", Font.PLAIN, 12));
 
-        java.util.List<Desafio> desafios = Fachada.getInstance().getControladorDesafio().listarDesafios();
+        java.util.ArrayList<Desafio> desafios = Fachada.getInstance().getControladorDesafio().listarDesafios();
 
         String texto = Relatorio.gerarRelatorioDesafios(desafios, usuario);
         area.setText(texto);

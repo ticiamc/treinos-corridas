@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.ArrayList;
 
 public class Relatorio {
     private Relatorio() {
@@ -485,7 +486,7 @@ public class Relatorio {
 
     // --- 9. GERAR EXEL DESAFIOS ---
 
-    public static void exportarRelatorioDesafiosExcel(List<Desafio> desafios, Usuario usuario, String caminhoArquivo) throws IOException {
+    public static void exportarRelatorioDesafiosExcel(ArrayList<Desafio> desafios, Usuario usuario, String caminhoArquivo) throws IOException {
        
         if (!caminhoArquivo.toLowerCase().endsWith(".xls"))
             caminhoArquivo += ".xls";
@@ -525,7 +526,7 @@ public class Relatorio {
 
 
     // --- 10. GERAR PDF DESAFIOS ---
-    public static void exportarRelatorioDesafiosPDF(List<Desafio> desafios, Usuario usuario, String caminhoArquivo) throws IOException {
+    public static void exportarRelatorioDesafiosPDF(ArrayList<Desafio> desafios, Usuario usuario, String caminhoArquivo) throws IOException {
 
     if (!caminhoArquivo.toLowerCase().endsWith(".pdf"))
         caminhoArquivo += ".pdf";

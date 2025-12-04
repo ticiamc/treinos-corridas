@@ -9,6 +9,7 @@ import br.com.negocio.treinos.Notificacao; // Import necessário
 import java.time.LocalDate; 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class ControladorDesafio {
@@ -54,7 +55,7 @@ public class ControladorDesafio {
         repositorioDesafio.atualizar(d);
     }
 
-    public List<Desafio> listarDesafios() { return repositorioDesafio.listarTodos(); }
+    public ArrayList<Desafio> listarDesafios() { return repositorioDesafio.listarTodos(); }
 
     public void participarDesafio(int idDesafio, String cpfUsuario) throws Exception {
         Usuario usuario = repositorioCliente.buscarElementoPorCpf(cpfUsuario);

@@ -14,7 +14,7 @@ public class RepositorioDesafio implements IRepositorioDesafio {
         return instancia;
     }
     
-    private List<Desafio> desafios;
+    private ArrayList<Desafio> desafios;
     
     public RepositorioDesafio() { this.desafios = new ArrayList<>(); }
 
@@ -40,7 +40,7 @@ public class RepositorioDesafio implements IRepositorioDesafio {
     }
 
     @Override
-    public List<Desafio> listarTodos() { return new ArrayList<>(desafios); }
+    public ArrayList<Desafio> listarTodos() { return new ArrayList<>(desafios); }
 
     @Override
     public void remover(int idDesafio) { this.desafios.removeIf(d -> d.getIdDesafio() == idDesafio); }
