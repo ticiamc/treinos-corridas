@@ -12,6 +12,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.time.format.DateTimeFormatter;
 
 public class TelaCriarPlanoTreino {
 
@@ -35,18 +36,22 @@ public class TelaCriarPlanoTreino {
         titulo.setForeground(corDestaque);
         painel.add(titulo, BorderLayout.NORTH);
 
-        JPanel form = new JPanel(new GridLayout(5,2,10,10));
+       JPanel form = new JPanel(new GridLayout(5,2,10,10));
         form.setBackground(corCard);
         form.setBorder(new EmptyBorder(20,20,20,20));
+
+        // Formatador para padrão BR
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         JLabel lblNome = new JLabel("Nome do Plano:"); lblNome.setForeground(Color.WHITE);
         JTextField txtNome = new JTextField();
         
-        JLabel lblInicio = new JLabel("Início (AAAA-MM-DD):"); lblInicio.setForeground(Color.WHITE);
-        JTextField txtInicio = new JTextField(LocalDate.now().toString());
+        // Rótulos e valores iniciais ajustados
+        JLabel lblInicio = new JLabel("Início (dd/MM/yyyy):"); lblInicio.setForeground(Color.WHITE);
+        JTextField txtInicio = new JTextField(LocalDate.now().format(fmt));
         
-        JLabel lblFim = new JLabel("Fim (AAAA-MM-DD):"); lblFim.setForeground(Color.WHITE);
-        JTextField txtFim = new JTextField(LocalDate.now().plusWeeks(4).toString());
+        JLabel lblFim = new JLabel("Fim (dd/MM/yyyy):"); lblFim.setForeground(Color.WHITE);
+        JTextField txtFim = new JTextField(LocalDate.now().plusWeeks(4).format(fmt));
 
         form.add(lblNome); form.add(txtNome);
         form.add(lblInicio); form.add(txtInicio);
@@ -69,25 +74,23 @@ public class TelaCriarPlanoTreino {
                     return;
                 }
 
-                // Tenta cadastrar (Controller vai validar nome vazio e datas)
+                // Parse usando o formatador fmt
                 TelaComputador.controladorPlanoTreino.cadastrarPlano(
                     usuario.getCpf(), 
                     txtNome.getText(), 
-                    LocalDate.parse(txtInicio.getText()), 
-                    LocalDate.parse(txtFim.getText())
+                    LocalDate.parse(txtInicio.getText(), fmt), 
+                    LocalDate.parse(txtFim.getText(), fmt)
                 );
 
                 JOptionPane.showMessageDialog(painel, "Plano criado com sucesso!");
-                // Redireciona para a lista para ver o plano criado
                 GerenciadorTelas.getInstance().carregarTela(new TelaListarPlanosTreino(controlador).criarPainel());
 
             } catch (DateTimeParseException dt) {
-                JOptionPane.showMessageDialog(painel, "Data inválida. Use o formato AAAA-MM-DD.");
+                JOptionPane.showMessageDialog(painel, "Data inválida. Use o formato dd/MM/yyyy.");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(painel, "Erro: " + ex.getMessage());
             }
         });
-
         // --- BOTÃO VOLTAR AO MENU PRINCIPAL ---
         JButton btnVoltar = new JButton("Voltar ao Menu Principal");
         btnVoltar.setBackground(new Color(60,60,60));
